@@ -29,7 +29,7 @@ router.post('/login', validate.validateLogin(),async function(req, res, next) {
 
   
 
-router.post('/create', validate.validateRegisterUser(), async (req, res)=>{
+router.post('/create', validate.validateRegisterUser(), async (req, res,next)=>{
     
     try {
       const errors = validationResult(req);
