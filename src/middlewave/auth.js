@@ -3,11 +3,11 @@ const User= require('../model/user');
 
 const authUser = async (req, res, next)=>{
     try {
-        console.log( req.header('Authorization'));
         const token = req.header('Authorization')&& req.header('Authorization').replace('Bearer ', '');
         if(!token) return res.status(401).json('Access Denied')
         const decode = jwt.verify(token,process.env.JWT_SECRET);
-        const user =await User.findOne({where :{_id:decode.userId}});
+       
+        const user =await User.findOne({_id:decode.userId});
         if(!user) throw new Error();
         req.user = user;
         

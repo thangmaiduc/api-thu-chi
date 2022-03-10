@@ -2,16 +2,16 @@ const mongoose = require("mongoose")
 
 const Schema = new mongoose.Schema({
     money: {
-        type: String,
-        trim: true,
-        unique: true,
+        type: Number,
+        
+       
         required: true
     },
     note: {
         type: String,
         trim: true,
-        unique: true,
-        required: true
+        
+       
     },
     group: {
         type: mongoose.Schema.Types.ObjectId,
@@ -26,6 +26,7 @@ const Schema = new mongoose.Schema({
     date:{
         type: Date,
         require: true,
+        immutable: true,
         default: Date.now()
     }
 })

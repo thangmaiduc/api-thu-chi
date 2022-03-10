@@ -1,45 +1,55 @@
-var express = require('express');
-var jwt = require("jsonwebtoken");
-var User = require('../model/user');
-
-var router = express.Router();
-
+const express = require('express');
+const jwt = require("jsonwebtoken");
+const User = require('../model/user');
+const {validate} = require('../middlewave/validation')
+const router = express.Router();
+var {validationResult} = require('express-validator');
 /* GET users listing. */
-router.post('/login', async function(req, res, next) {
+router.post('/login', validate.validateLogin(),async function(req, res, next) {
     const { email, password } = req.body
     try {
+      const errors = validationResult(req);
+      
+    if (!errors.isEmpty()) {
+      const error = new Error('Validation failed.');
+      error.statusCode = 422;
+      error.data = errors.array();
+      throw error;
+    }
       const user = await User.findByCredentials(email, password)
-      if (!user) {
-        res
-          .status(404)
-          .json({ error: { message: 'Email hoặc mật khẩu không hợp lệ' } })
-      }
       const token = jwt.sign({ userId : user._id},process.env.JWT_SECRET,{expiresIn:'3 days'});
-
       res.setHeader('authToken', token)
       res.status(200).json({ user, token })
     } catch (error) {
-      console.log(error)
-      return res.status(500).send(error)
+      if(!error.status) error.status =500;
+      next(error);
     }
 
 });
 
   
 
-router.post('/create',async (req, res)=>{
+router.post('/create', validate.validateRegisterUser(), async (req, res)=>{
     
     try {
+      const errors = validationResult(req);
+      
+      if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+      }
         const user  = new  User(req.body) ;
         await user.save()
         const token = jwt.sign({ userId : user._id},process.env.JWT_SECRET,{expiresIn:'3 days'});
 
       res.setHeader('authToken', token)
-      res.status(200).json({ user, token })
+      res.status(201).json({ user, token })
         
-    } catch (_error) {
+    } catch (error) {
         
-        res.status(500).send(_error);
+        next(error)
     }
 })
 module.exports = router;

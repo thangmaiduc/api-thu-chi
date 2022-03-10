@@ -4,13 +4,13 @@ const Schema = new mongoose.Schema({
     money: {
         type: String,
         trim: true,
-        unique: true,
+        
         required: true
     },
     note: {
         type: String,
         trim: true,
-        unique: true,
+        
         required: true
     },
     group: {
@@ -26,9 +26,13 @@ const Schema = new mongoose.Schema({
     date:{
         type: Date,
         require: true,
+        immutable: true,
         default: Date.now()
     }
 })
 
 const Receipts = mongoose.model('Receipts', Schema)
+
+// test 
+
 module.exports = Receipts

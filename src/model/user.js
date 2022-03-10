@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
-        unique: true,
+        
         required: true
     },
     email:{
@@ -47,11 +47,22 @@ userSchema.statics.findByCredentials= async (email, password)=>{
     
     user = await User.findOne({email})
     if(!user){
-        throw new Error(" Unable login")
+        const err = new Error('Email hoặc mật khẩu không hợp lệ' );
+        err.statusCode=401;
+        
+        throw err;
+        
     }
-    const isMatch= bcrypt.compare(password,user.password)
-    if(!isMatch)
-        throw new Error(" Unable login")
+    
+    const isMatch=await bcrypt.compare(password,user.password)
+    
+    if(!isMatch){
+        const err = new Error('Email hoặc mật khẩu không hợp lệ' );
+        err.statusCode=(401);
+        
+        throw err;
+        
+    }
     return user;
 }
 
