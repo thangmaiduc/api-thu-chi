@@ -13,7 +13,7 @@ const authUser = async (req, res, next)=>{
         
         next()
     } catch (error) {
-        res.send(error)
+        next(error)
     }
     
 }

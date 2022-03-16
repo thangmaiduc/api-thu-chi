@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         
     },
+    resetLink:{
+        type: String,
+        default:''
+        
+    },
     password:{
         type: String,
         required: true,

@@ -35,18 +35,6 @@ router.get('/', async(req,res)=>{
   
 })
 
-router.get('//', async (req, res)=>{
-  
-  try {
-    
-  
-  } catch (error) {
-    console.log(error.message);
-    res.status(404).json({status:"err"})
-  }
-    
 
- 
-})
 
 module.exports = router;

@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 const Schema = new mongoose.Schema({
     money: {
-        type: String,
+        type: Number,
         trim: true,
         
         required: true

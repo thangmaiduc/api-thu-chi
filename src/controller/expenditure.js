@@ -7,7 +7,7 @@ const {
 } = require("../util/handleDate");
 
 const Expenditure = require("../model/expenditure");
-
+const Receipts = require('../model/receipts') 
 var {validationResult} = require('express-validator');
 const createExpenditute = async (req, res, next) => {
   try {
@@ -73,7 +73,19 @@ const getExpendituteInMonth = async (req, res, next) => {
       owner: req.user._id,
       date: { $gte: getMonthCur(mydate), $lt: getMonthNext(mydate) },
     });
-    res.status(200).json(chi);
+    const thu = await Receipts.find({
+      owner: req.user._id,
+      date: { $gte: getMonthCur(mydate), $lt: getMonthNext(mydate) },
+    });
+    let tongThu = thu.reduce((tongThu, thu)=>{
+      return tongThu+= thu.money;
+    }, 0)
+    let tongChi = chi.reduce((tongChi, chi)=>{
+      return tongChi+= chi.money;
+    }, 0)
+    const data = {thu,chi,tongThu,tongChi};
+    console.log();
+    res.status(200).json(data);
   } catch (error) {
     
     next(error);
