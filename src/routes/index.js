@@ -4,6 +4,7 @@ var {authUser} = require('../middlewave/auth');
 var router = express.Router();
 var receiptsRouter = require('./receipts')
 var expenditureRouter = require('./expenditure')
+var postRouter = require('./post')
 var groupRouter =require('./group');
 
 
@@ -13,6 +14,7 @@ router.use(authUser);
 router.use('/khoan-thu/',receiptsRouter);
 router.use('/nhom/',groupRouter);
 router.use('/khoan-chi/',expenditureRouter);
+router.use('/khoan-thu-chi/',postRouter);
 router.use('/users', usersRouter);
 router.get('/', async(req,res)=>{
   
