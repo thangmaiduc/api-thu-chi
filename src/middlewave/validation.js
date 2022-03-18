@@ -25,7 +25,8 @@ let validatePostBoth=() =>{
     return [
         check('money', 'Invalid does not empty' ).not().isEmpty(),
         check('money', 'Invalid Currency' ).isCurrency(),
-        check('group', 'Invalid does not empty' ).not().isEmpty()
+        check('group', 'Invalid does not empty' ).not().isEmpty(),
+        check('type', 'Invalid does not empty' ).not().isEmpty()
     ]
 }
 let validate = {
