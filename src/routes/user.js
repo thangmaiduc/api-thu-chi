@@ -6,6 +6,7 @@ var router = express.Router();
 /* GET users listing. */
 
 router.patch('/me', async (req, res)=>{
+ 
     
   const updates = Object.keys(req.body);
   const allowsUpdate =['name','email','password'] ;

@@ -11,13 +11,61 @@ var groupRouter =require('./group');
 /* GET home page. */
 
 router.use(authUser);
-router.use('/khoan-thu/',receiptsRouter);
-router.use('/nhom/',groupRouter);
-router.use('/khoan-chi/',expenditureRouter);
-router.use('/khoan-thu-chi/',postRouter);
-router.use('/users', usersRouter);
+router.use('/khoan-thu/',receiptsRouter
+//#swagger.ignore = true
+);
+router.use('/nhom/',groupRouter
+// #swagger.tags = ['Group']
+
+    /* #swagger.security = [{
+        "apiKeyAuth": []
+    }] */
+
+    /* #swagger.responses[500] = {
+            schema: { $ref: '#/definitions/someSchema' }
+    } */
+
+    /* #swagger.responses[501] = {
+            ifStatusPresent: true,
+            schema: { $ref: '#/definitions/someSchema' }
+    } */
+    );
+router.use('/khoan-chi/',expenditureRouter
+// #swagger.ignore = true
+);
+router.use('/khoan-thu-chi/',postRouter
+// #swagger.tags = ['Post']
+// #swagger.description = 'Endpoint for expenditure and receipts.'
+    /* #swagger.security = [{
+        "apiKeyAuth": []
+    }] */
+
+    /* #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } */
+    /* #swagger.responses[404] = {
+            description: "Not found any post"
+    } */
+
+    
+);
+router.use('/users', usersRouter
+// #swagger.tags = ['User']
+    /* #swagger.security = [{
+        "apiKeyAuth": []
+    }] */
+
+    /* #swagger.responses[500] = {
+            schema: { $ref: '#/definitions/someSchema' }
+    } */
+
+    /* #swagger.responses[501] = {
+            ifStatusPresent: true,
+            schema: { $ref: '#/definitions/someSchema' }
+    } */
+);
 router.get('/', async(req,res)=>{
-  
+  //#swagger.ignore = true
   try {
     var c = new Receipts({
       money:245000,
