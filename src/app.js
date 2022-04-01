@@ -5,6 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('./db/mongoose');
 
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('../swagger_output.json')
+var cors = require('cors')
+
 var indexRouter = require('./routes/index');
 var loginRouter = require('./routes/login');
 
@@ -22,12 +26,32 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 // dat xac thực auth trước các route khác và sau login
-app.use(loginRouter);
+app.use(cors())
+app.use('/auth',loginRouter
+// #swagger.tags = ['Auth']
+// #swagger.description = 'Endpoint for login, logout, forget password.'
+    /* #swagger.security = [{
+        "apiKeyAuth": []
+    }] */
 
-app.use('/api', indexRouter);
+    /* #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } */
+    /* #swagger.responses[404] = {
+            description: "Not found "
+    } */
+
+);
+
+app.use('/api', indexRouter
+// #swagger.tags = ['Api']
+    
+    );
  app.get('/', (req, res)=>{
    res.status(200).json({status:"ok"});
  })
+ 
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -42,6 +66,7 @@ app.use((error, req, res, next) => {
   const data = error.data;
   res.status(status).json({ message: message, data: data,  });
 });
+
 
 
 module.exports = app;

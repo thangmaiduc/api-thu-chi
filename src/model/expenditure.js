@@ -31,6 +31,15 @@ const Schema = new mongoose.Schema({
     }
 })
 
-
+Schema.methods.toJSON = function(){
+  
+    object = this.toObject();
+  
+    delete object.__v;
+    delete object.owner
+    
+  
+    return object;
+  }
 const Expenditure = mongoose.model('Expenditure', Schema)
 module.exports = Expenditure

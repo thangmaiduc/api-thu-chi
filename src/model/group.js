@@ -30,5 +30,16 @@ Schema.virtual('expenditures', {
     localField: '_id',
     foreignField: 'group'
 })
+Schema.methods.toJSON = function(){
+  
+  object = this.toObject();
+
+  delete object.__v;
+  delete object.id;
+  delete object.owner
+  
+
+  return object;
+}
 const Group = mongoose.model("Group", Schema);
 module.exports = Group;
