@@ -43,10 +43,10 @@ router.post(
 );
 
 router.post(
-  "/create",// #swagger.description = 'Endpoint to sign up.'
+  "/create", // #swagger.description = 'Endpoint to sign up.'
   //#swagger.responses[422] ={description: 'Validation failed.' }
   //#swagger.responses[400] ={description: 'Bad Request' }
-  
+
   validate.validateRegisterUser(),
   async (req, res, next) => {
     try {
@@ -65,10 +65,14 @@ router.post(
         html: `<h2>Cảm ơn bạn vừa đăng kí tài khoản tại ứng dụng của chúng tôi!</h2>`,
       };
       mg.messages().send(data, function (error, body) {
-        if (error) {
-          const err = new Error(body);
-          err.statusCode = 400;
-          throw err;
+        try {
+          if (error) {
+            const err = new Error(error.message);
+            err.statusCode = 400;
+            throw err;
+          }
+        } catch (error) {
+          return next(error);
         }
       });
       const user = new User(req.body);
@@ -87,10 +91,10 @@ router.post(
 
 router.put("/reset-password", async (req, res, next) => {
   const { resetLink, newPass } = req.body;
-// #swagger.description = 'Endpoint reset password.'
-      //#swagger.responses[422] ={description: 'Validation failed.' }
-      //#swagger.responses[401] ={description: 'Unauthorized' }
-      //#swagger.responses[400] ={description: 'Bad Request' }
+  // #swagger.description = 'Endpoint reset password.'
+  //#swagger.responses[422] ={description: 'Validation failed.' }
+  //#swagger.responses[401] ={description: 'Unauthorized' }
+  //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     if (!resetLink) {
       const err = new Error("Không tồn tại token");
@@ -120,8 +124,8 @@ router.put("/reset-password", async (req, res, next) => {
 });
 router.put("/forgot-password", async (req, res, next) => {
   // #swagger.description = 'Endpoint forgot password.'
-     
-      //#swagger.responses[400] ={description: 'Bad Request' }
+
+  //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     const { email } = req.body;
     console.log(email, req.body);
@@ -142,10 +146,14 @@ router.put("/forgot-password", async (req, res, next) => {
       <p><a href=''>${process.env.CLIENT_URL}/reset-password/${token}</a></p>`,
     };
     mg.messages().send(data, function (error, body) {
-      if (error) {
-        const err = new Error(body);
-        err.statusCode = 400;
-        throw err;
+      try {
+        if (error) {
+          const err = new Error(error.message);
+          err.statusCode = 400;
+          throw err;
+        }
+      } catch (error) {
+        return next(error);
       }
     });
     await user.updateOne({ resetLink: token });
