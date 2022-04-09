@@ -63,16 +63,24 @@
         "description": "Endpoint to login.",
         "parameters": [
           {
-            "name": "body",
+            "name": "userCredentials",
             "in": "body",
             "schema": {
-              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
               "properties": {
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "maxLength": 250,
+                  "example": "thang@gmail.com"
                 },
                 "password": {
-                  "example": "any"
+                  "type": "string",
+                  "minLength": 7,
+                  "maxLength": 250,
+                  "example": "1234567"
                 }
               }
             }
@@ -110,13 +118,30 @@
         "description": "Endpoint to sign up.",
         "parameters": [
           {
-            "name": "body",
+            "name": "newUser",
             "in": "body",
             "schema": {
-              "type": "object",
+              "required": [
+                "name",
+                "email",
+                "password"
+              ],
               "properties": {
+                "name": {
+                  "type": "string",
+                  "maxLength": 250,
+                  "example": "Thang Mai."
+                },
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "maxLength": 250,
+                  "example": "thang@gmail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "minLength": 7,
+                  "maxLength": 250,
+                  "example": "1234567"
                 }
               }
             }

@@ -5,11 +5,13 @@ const Schema = new mongoose.Schema({
     type: String,
     trim: true,
     required: true,
+    maxlength: 250
   },
   color: {
     type: String,
     trim: true,
-    required: true
+    required: true,
+    maxlength: 8
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

@@ -18,6 +18,26 @@ router.post(
       // #swagger.description = 'Endpoint to login.'
       //#swagger.responses[422] ={description: 'Validation failed.' }
       //#swagger.responses[401] ={description: 'Unauthorized' }
+      /* #swagger.parameters['userCredentials'] = { 
+            in: 'body', 
+            '@schema': { 
+                "required": [ "email", "password"], 
+                "properties": { 
+                     "email": { 
+                        "type": "string", 
+                        "maxLength": 250, 
+                        "example": "thang@gmail.com" 
+                    } ,
+                     "password": { 
+                        "type": "string", 
+                        "minLength": 7, 
+                        "maxLength": 250, 
+                        "example": "1234567" 
+                    } 
+                    
+                } 
+            } 
+        } */
       /* #swagger.responses[200] = { 
                
                description: 'successful.' 
@@ -46,7 +66,30 @@ router.post(
   "/create", // #swagger.description = 'Endpoint to sign up.'
   //#swagger.responses[422] ={description: 'Validation failed.' }
   //#swagger.responses[400] ={description: 'Bad Request' }
-
+  /* #swagger.parameters['newUser'] = { 
+            in: 'body', 
+            '@schema': { 
+                "required": ["name", "email", "password"], 
+                "properties": { 
+                    "name": { 
+                        "type": "string", 
+                        "maxLength": 250, 
+                        "example": "Thang Mai." 
+                    } ,
+                     "email": { 
+                        "type": "string", 
+                        "maxLength": 250, 
+                        "example": "thang@gmail.com" 
+                    } ,
+                     "password": { 
+                        "type": "string", 
+                        "minLength": 7, 
+                        "maxLength": 250, 
+                        "example": "1234567" 
+                    } 
+                } 
+            } 
+        } */
   validate.validateRegisterUser(),
   async (req, res, next) => {
     try {
@@ -75,7 +118,8 @@ router.post(
           return next(error);
         }
       });
-      const user = new User(req.body);
+      const {name, email, password} = req.body;
+      const user = new User();
       await user.save();
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: "3 days",
