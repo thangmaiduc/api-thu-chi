@@ -60,7 +60,7 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use((error, req, res, next) => {
-  console.error(error.message);
+  console.error(error);
   const status = error.statusCode || 500;
   const message = error.message;
   let errors={} ;
