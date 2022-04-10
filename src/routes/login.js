@@ -7,6 +7,8 @@ const DOMAIN = "sandbox960f2edfd4de411ab1a1a844270e0482.mailgun.org";
 const mg = mailgun({ apiKey: process.env.API_KEY, domain: DOMAIN });
 const router = express.Router();
 var { validationResult } = require("express-validator");
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 /* GET users listing. */
 router.post(
   "/login",
@@ -118,7 +120,7 @@ router.post(
           return next(error);
         }
       });
-      const {name, email, password} = req.body;
+      const { name, email, password } = req.body;
       const user = new User();
       await user.save();
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
@@ -183,23 +185,28 @@ router.put("/forgot-password", async (req, res, next) => {
       expiresIn: "20m",
     });
     const data = {
-      from: "noreply@hello.com",
+      from: "thang00lata@gmail.com",
       to: req.body.email,
       subject: "Đổi mật khẩu!!",
       html: `<h2>Vui lòng click link ở dưới để đổi mật khẩu!</h2>
       <p><a href=''>${process.env.CLIENT_URL}/reset-password/${token}</a></p>`,
     };
-    mg.messages().send(data, function (error, body) {
-      try {
-        if (error) {
-          const err = new Error(error.message);
-          err.statusCode = 400;
-          throw err;
+    sgMail
+      .send(data)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        try {
+          console.log(error);
+        const err = new Error(error.message);
+        err.statusCode = 400;
+        throw err;
+        } catch (error) {
+          next(error)
         }
-      } catch (error) {
-        return next(error);
-      }
-    });
+        
+      });
     await user.updateOne({ resetLink: token });
 
     res.json({ message: "Link yêu cầu đổi mật khẩu đã gửi tới email của bạn" });

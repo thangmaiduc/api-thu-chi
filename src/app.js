@@ -60,11 +60,22 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use((error, req, res, next) => {
-  console.log(error.message);
+  console.error(error.message);
   const status = error.statusCode || 500;
   const message = error.message;
-  const data = error.data;
-  res.status(status).json({ message: message, data: data,  });
+  let errors={} ;
+  if(status === 422){
+    
+    error.data.forEach( err =>{
+      
+      let key = err.param;
+      let value = err.msg;
+      
+      errors[key] = value;
+    })
+    
+  }
+  res.status(status).json({ message: message, errors  });
 });
 
 
