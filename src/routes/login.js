@@ -101,28 +101,24 @@ router.post(
         throw error;
       }
       const data = {
-        from: "thang00lata@gmail.com",
+        from: "noreply@hello.com",
         to: req.body.email,
         subject: "Chào mừng bạn!!",
         html: `<h2>Cảm ơn bạn vừa đăng kí tài khoản tại ứng dụng của chúng tôi!</h2>`,
       };
-      sgMail
-      .send(data)
-      .then(() => {
-        console.log("Email sent");
-      })
-      .catch((error) => {
+      mg.messages().send(data, function (error, body) {
         try {
-          console.log(error);
-        const err = new Error(error.message);
-        err.statusCode = 400;
-        throw err;
+          if (error) {
+            const err = new Error(error.message);
+            err.statusCode = 400;
+            throw err;
+          }
         } catch (error) {
-          next(error)
+          return next(error);
         }
-        
       });
-      const user = new User(req.body);
+      const { name, email, password } = req.body;
+      const user = new User();
       await user.save();
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: "3 days",
