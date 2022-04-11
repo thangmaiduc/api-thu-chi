@@ -9,7 +9,7 @@ router.patch('/me', async (req, res)=>{
  
     
   const updates = Object.keys(req.body);
-  const allowsUpdate =['name','email','password'] ;
+  const allowsUpdate =['name','password'] ;
 
   const isValidUpdate = updates.every((update)=>allowsUpdate.includes(update))
 
@@ -26,7 +26,8 @@ router.patch('/me', async (req, res)=>{
 router.get('/me', async (req, res)=>{
   
   try {
-      res.status(200).json(req.user)
+    let {_id, email, name} = req.user
+      res.status(200).json({_id, email, name})
   } catch (error) {
       res.status(400).send(error)
   }
