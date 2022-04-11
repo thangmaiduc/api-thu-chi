@@ -4,7 +4,7 @@ const User= require('../model/user');
 const authUser = async (req, res, next)=>{
     try {
         const token = req.header('Authorization')&& req.header('Authorization').replace('Bearer ', '');
-        if(!token) return res.status(401).json('Access Denied')
+        if(!token) return res.status(401).json('Bạn chưa đăng nhập, vui lòng đăng nhập')
         const decode = jwt.verify(token,process.env.JWT_SECRET);
        
         const user =await User.findOne({_id:decode.userId});

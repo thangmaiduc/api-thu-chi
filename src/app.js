@@ -63,9 +63,9 @@ app.use((error, req, res, next) => {
   console.error(error);
   const status = error.statusCode || 500;
   const message = error.message;
-  let errors={} ;
+  
   if(status === 422){
-    
+    let errors={} ;
     error.data.forEach( err =>{
       
       let key = err.param;
@@ -73,9 +73,10 @@ app.use((error, req, res, next) => {
       
       errors[key] = value;
     })
-    
+    res.status(status).json({ message: message, errors  });
+    return
   }
-  res.status(status).json({ message: message, errors  });
+  res.status(status).json({ message: message });
 });
 
 

@@ -7,6 +7,7 @@ const {
 } = require("../util/handleDate");
 
 var Expenditure = require("../model/expenditure");
+var Group = require("../model/group");
 var Receipts = require("../model/receipts");
 var {validationResult} = require('express-validator');
 const getMonth = async (req, res, next) => {
@@ -98,7 +99,7 @@ const createPost = async (req, res, next) => {
       const errors = validationResult(req);
         
       if (!errors.isEmpty()) {
-        const error = new Error('Validation failed.');
+        const error = new Error('Dữ liệu nhập vào không hợp lệ');
         error.statusCode = 422;
         error.data = errors.array();
         throw error;
@@ -106,6 +107,12 @@ const createPost = async (req, res, next) => {
       const type =req.body.type;
       delete req.body.type;
       let post;
+      let group = await Group.findById(req.body.group, {type : 1});
+      if(group.type !==type) {
+        const error = new Error('Nhóm không chính xác');
+        error.statusCode = 400;
+        throw error;
+      }
       if( type==='chi')
         post = new Expenditure({ ...req.body, owner: req.user._id })
       else if( type==='thu')
@@ -137,7 +144,7 @@ const updatePost = async (req, res, next) => {
     const errors = validationResult(req);
         
       if (!errors.isEmpty()) {
-        const error = new Error('Validation failed.');
+        const error = new Error('Dữ liệu nhập vào không hợp lệ.');
         error.statusCode = 422;
         error.data = errors.array();
         throw error;
@@ -158,7 +165,7 @@ const updatePost = async (req, res, next) => {
       const expenditure = await Expenditure.findOne({ _id, owner: req.user._id });
       const receipts = await Receipts.findOne({ _id, owner: req.user._id });
       if (!expenditure && !receipts) {
-        const err = new Error("Không thấy khoảng receipts hoặc expenditure cần sửa");
+        const err = new Error("Không thấy khoảng thu hoặc chi cần sửa");
         err.statusCode = 404;
         throw err;
       }

@@ -333,82 +333,6 @@
       }
     },
     "/api/nhom/{id}": {
-      "get": {
-        "tags": [
-          "Group"
-        ],
-        "description": "Endpoint to get all post in a group.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "Group ID ."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful.",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "_id": {
-                    "type": "string",
-                    "example": "620f63f20f474f81b4fae559"
-                  },
-                  "name": {
-                    "type": "string",
-                    "example": "tien tieu vat"
-                  },
-                  "color": {
-                    "type": "string",
-                    "example": "red"
-                  },
-                  "owner": {
-                    "type": "string",
-                    "example": "6209b5cdca0a9451ce1238c5"
-                  },
-                  "receipts": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/expenditures"
-                    }
-                  },
-                  "expenditures": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/receipts"
-                    }
-                  }
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "not found any group"
-          },
-          "500": {
-            "schema": {
-              "$ref": "#/definitions/someSchema"
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "security": [
-          {
-            "apiKeyAuth": []
-          }
-        ]
-      },
       "patch": {
         "tags": [
           "Group"
@@ -761,69 +685,39 @@
             "apiKeyAuth": []
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "schema": {
+              "$ref": "#/definitions/someSchema"
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
       }
     }
   },
   "definitions": {
-    "User": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "example": "Jhon Doe"
-        },
-        "age": {
-          "type": "number",
-          "example": 29
-        },
-        "parents": {
-          "type": "object",
-          "properties": {
-            "father": {
-              "type": "string",
-              "example": "Simon Doe"
-            },
-            "mother": {
-              "type": "string",
-              "example": "Marie Doe"
-            }
-          }
-        },
-        "diplomas": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "school": {
-                "type": "string",
-                "example": "XYZ University"
-              },
-              "year": {
-                "type": "number",
-                "example": 2020
-              },
-              "completed": {
-                "type": "boolean",
-                "example": true
-              },
-              "internship": {
-                "type": "object",
-                "properties": {
-                  "hours": {
-                    "type": "number",
-                    "example": 290
-                  },
-                  "location": {
-                    "type": "string",
-                    "example": "XYZ Company"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "expenditures": {
       "type": "object",
       "properties": {
@@ -888,6 +782,10 @@
         "color": {
           "type": "string",
           "example": "red"
+        },
+        "type": {
+          "type": "string",
+          "example": "'thu' | 'chi'"
         }
       }
     },
@@ -901,11 +799,16 @@
         "color": {
           "type": "string",
           "example": "ffff"
+        },
+        "type": {
+          "type": "string",
+          "example": "'thu' | 'chi'"
         }
       },
       "required": [
         "name",
-        "color"
+        "color",
+        "type"
       ]
     },
     "addPost": {
@@ -929,7 +832,7 @@
         },
         "type": {
           "type": "string",
-          "example": "thu or chi"
+          "example": "thu | chi"
         }
       }
     },

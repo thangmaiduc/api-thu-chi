@@ -43,25 +43,7 @@ const doc = {
         }
     },
     definitions: {
-        User: {
-            name: "Jhon Doe",
-            age: 29,
-            parents: {
-                father: "Simon Doe",
-                mother: "Marie Doe"
-            },
-            diplomas: [
-                {
-                    school: "XYZ University",
-                    year: 2020,
-                    completed: true,
-                    internship: {
-                        hours: 290,
-                        location: "XYZ Company"
-                    }
-                }
-            ]
-        },
+        
         expenditures:{
             "_id": "620f03af4060306a30737a26",
             "money": 101000,
@@ -80,18 +62,20 @@ const doc = {
                 "_id": "620f63f20f474f81b4fae559",
                 "name": "tien tieu vat",
                 "color": "red",
+                "type": "'thu' | 'chi'"
                
         },
         addGroup: {
             $name: "Tiền lương",
-            $color: 'ffff'
+            $color: 'ffff',
+            $type: "'thu' | 'chi'"
         },
         addPost:{
             "money": 10000000,
             "note": "Tien luong thang 2",
             "group": "620f63f20f474f81b4fae559",
             "date": "2022-02-18T02:20:42.986Z",
-            "type": "thu or chi"
+            "type": "thu | chi"
         },
         editPost:{
             "money": 10000000,

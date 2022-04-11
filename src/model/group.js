@@ -4,6 +4,7 @@ const Schema = new mongoose.Schema({
   name: {
     type: String,
     trim: true,
+    unique: true,
     required: true,
     maxlength: 250
   },
@@ -12,6 +13,13 @@ const Schema = new mongoose.Schema({
     trim: true,
     required: true,
     maxlength: 8
+  },
+  type: {
+    type: String,
+    enum : ['thu', 'chi'],
+    trim: true,
+    required: true,
+    maxlength: 10
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

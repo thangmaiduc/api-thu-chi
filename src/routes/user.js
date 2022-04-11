@@ -13,12 +13,20 @@ router.patch('/me', async (req, res)=>{
 
   const isValidUpdate = updates.every((update)=>allowsUpdate.includes(update))
 
-  if(!isValidUpdate) res.status(400).send({error: 'Invalid update'})
+  if(!isValidUpdate) res.status(400).send({error: 'Chỉnh sửa không hợp lệ'})
   
   try {
       updates.forEach((update)=>req.user[update]=req.body[update])
       await req.user.save();
       res.send(req.user);
+  } catch (error) {
+      res.status(400).send(error)
+  }
+})
+router.get('/me', async (req, res)=>{
+  
+  try {
+      res.status(200).json(req.user)
   } catch (error) {
       res.status(400).send(error)
   }
