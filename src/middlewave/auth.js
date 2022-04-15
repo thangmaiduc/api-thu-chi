@@ -23,7 +23,7 @@ const authUser = async (req, res, next) => {
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 401;
-      error.message = "token không hợp lệ hoặc, đã quá hạn vui lòng đăng nhập lại";
+      error.message = "token không hợp lệ hoặc đã quá hạn, vui lòng đăng nhập lại";
     }
     next(error);
   }

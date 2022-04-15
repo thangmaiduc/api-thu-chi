@@ -50,7 +50,7 @@ router.post(
       }
       const user = await User.findByCredentials(email, password);
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "3 days",
+        expiresIn: "30 seconds",
       });
       res.setHeader("authToken", token);
       res.status(200).json({ user, token });
