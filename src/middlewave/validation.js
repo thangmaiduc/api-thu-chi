@@ -4,10 +4,10 @@ let validateRegisterUser = () => {
   return [ 
     check('email', 'Email không chính xác').not().isEmpty(),
     check('name', 'Tên không chính xác').not().isEmpty(),
-    check('email',  'Email không chính xác').isLength({ min: 7 }),
+    check('email',  'Email tối thiểu phải 7 kí tự').isLength({ min: 7 }),
     check('name',  'Tên tối thiểu phải 5 kí tự').isLength({ min: 5 }),
     check('email', 'Email không chính xác').isEmail(),
-    check('password', 'Mật khẩu thiểu phải 6 kí tự').isLength({ min: 6 })
+    check('password', 'Mật khẩu tối thiểu phải 6 kí tự').isLength({ min: 6 })
   ]; 
 }
 

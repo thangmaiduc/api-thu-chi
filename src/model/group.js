@@ -26,6 +26,7 @@ const Schema = new mongoose.Schema({
     ref: "User",
   },
 },{
+    timestamps: true,
     toJSON: { virtuals: true},
     toObject: { virtuals: true}
 });

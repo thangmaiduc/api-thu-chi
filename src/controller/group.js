@@ -9,7 +9,7 @@ const getGroups = async (req, res, next) => {
    
 
   try {
-    var groups = await Group.find({ owner: req.user._id });
+    var groups = await Group.find({ owner: req.user._id }).sort({createdAt : -1});
     if (!groups) {
       const err = new Error("Không tìm thấy nhóm nào");
       err.statusCode = 404;
