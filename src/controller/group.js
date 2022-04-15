@@ -63,7 +63,7 @@ const getGroups = async (req, res, next) => {
 const createGroup = async (req, res, next) => {
   try {
     // #swagger.description = 'Endpoint to create a group.'
-    let isDulicateName = await Group.find({name:req.body.name},{name:1});
+    let isDulicateName = await Group.find({name:new RegExp('^'+req.body.name+ '$', 'i') , owner: req.user._id, type:req.body.type },{name:1});
     if(isDulicateName.length>0) {
       const err = new Error("Đã có tên nhóm này rồi");
       err.statusCode = 400;
@@ -110,12 +110,8 @@ const updateGroup = async (req, res, next) => {
                description: 'successful.' 
         } */
   try {
-    let isDulicateName = await Group.find({name:req.body.name},{name:1});
-    if(isDulicateName.length>0) {
-      const err = new Error("Đã có tên nhóm này rồi");
-      err.statusCode = 400;
-      throw err;
-    }
+   
+    
     let group = await Group.findOne({ _id:id, owner: req.user._id })
     .populate("expenditures", {
       options:{limit: 1}
@@ -128,6 +124,14 @@ const updateGroup = async (req, res, next) => {
       err.statusCode = 404;
       throw err;
     }
+    let isDulicateName = await Group.find({name:new RegExp('^'+req.body.name+ '$', 'i') , owner: req.user._id, type:req.body.type || group.type },{name:1});
+    isDulicateName = isDulicateName.filter( group => group.id !== id)
+    if(isDulicateName.length>0) {
+      const err = new Error("Đã có tên nhóm này rồi");
+      err.statusCode = 400;
+      throw err;
+    }
+   
     if(group.expenditures?.length + group.receipts?.length >0 && req.body.type) {
       const err = new Error("Không thể sửa kiểu nhóm khi đã có khoản thu chi ");
       err.statusCode = 400;

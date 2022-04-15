@@ -91,6 +91,7 @@ router.post(
         } */
   validate.validateRegisterUser(),
   async (req, res, next) => {
+    const { name, email, password } = req.body;
     try {
       const errors = validationResult(req);
 
@@ -100,8 +101,14 @@ router.post(
         error.data = errors.array();
         throw error;
       }
+      let checkEmail = await User.find({email});
+      if(checkEmail.length>0 ){
+        const err = new Error('Email đã được đăng ký, vui lòng chọn email khác');
+        err.statusCode = 400;
+        throw err;
+      }
       const data = {
-        from: "noreply@hello.com",
+        from: "thang00lata@gmail.com",
         to: req.body.email,
         subject: "Chào mừng bạn!!",
         html: `<h2>Cảm ơn bạn vừa đăng kí tài khoản tại ứng dụng của chúng tôi!</h2>`,
@@ -122,7 +129,7 @@ router.post(
         }
         
       });
-      const { name, email, password } = req.body;
+     
       const user = new User({ name, email, password });
       await user.save();
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
