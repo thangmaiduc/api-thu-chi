@@ -10,7 +10,6 @@ const Schema = new mongoose.Schema({
     note: {
         type: String,
         trim: true,
-        
        
     },
     group: {

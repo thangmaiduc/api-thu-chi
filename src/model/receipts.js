@@ -9,9 +9,7 @@ const Schema = new mongoose.Schema({
     },
     note: {
         type: String,
-        trim: true,
-        
-        required: true
+        trim: true
     },
     group: {
         type: mongoose.Schema.Types.ObjectId,
