@@ -8,7 +8,7 @@ const authUser = async (req, res, next) => {
       req.header("Authorization").replace("Bearer ", "");
     if (!token) {
       const error = new Error("Bạn chưa đăng nhập, vui lòng đăng nhập");
-      error.statusCode = 401;
+      error.statusCode = 417;
     }
     const decode = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -22,7 +22,7 @@ const authUser = async (req, res, next) => {
     next();
   } catch (error) {
     if (!error.statusCode) {
-      error.statusCode = 401;
+      error.statusCode = 417;
       error.message = "Hết phiên đăng nhập, vui lòng đăng nhập lại";
     }
     next(error);
