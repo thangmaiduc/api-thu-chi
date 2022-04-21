@@ -65,9 +65,15 @@ const createGroup = async (req, res, next) => {
     // #swagger.description = 'Endpoint to create a group.'
     let isDulicateName = await Group.find({name:new RegExp('^'+req.body.name+ '$', 'i') , owner: req.user._id, type:req.body.type },{name:1});
     if(isDulicateName.length>0) {
-      const err = new Error("Đã có tên nhóm này rồi");
-      err.statusCode = 400;
-      throw err;
+      let arr = []
+      const err = new Error('Dữ liệu nhập vào không hợp lệ');
+        let param = {
+          msg: 'Đã có tên nhóm này rồi', 
+          param : 'name'
+        }
+        err.data = [...arr, param]
+        err.statusCode = 422;
+        throw err;
     }
     var group = new Group({ ...req.body, owner: req.user._id });
     /* #swagger.parameters['newGroup'] = {
@@ -124,18 +130,31 @@ const updateGroup = async (req, res, next) => {
       err.statusCode = 404;
       throw err;
     }
+    let arr=[]
     let isDulicateName = await Group.find({name:new RegExp('^'+req.body.name+ '$', 'i') , owner: req.user._id, type:req.body.type || group.type },{name:1});
     isDulicateName = isDulicateName.filter( group => group.id !== id)
     if(isDulicateName.length>0) {
-      const err = new Error("Đã có tên nhóm này rồi");
-      err.statusCode = 400;
-      throw err;
+      
+      const err = new Error('Dữ liệu nhập vào không hợp lệ');
+        let param = {
+          msg: 'Đã có tên nhóm này rồi', 
+          param : 'name'
+        }
+        err.data = [...arr, param]
+        err.statusCode = 422;
+        throw err;
     }
    
     if(group.expenditures?.length + group.receipts?.length >0 && req.body.type) {
-      const err = new Error("Không thể sửa kiểu nhóm khi đã có khoản thu chi ");
-      err.statusCode = 400;
-      throw err;
+      const err = new Error('Dữ liệu  không hợp lệ');
+        let param = {
+          msg: 'Không thể sửa kiểu nhóm khi đã có khoản thu chi', 
+          param : 'type'
+        }
+        err.data = [...arr, param]
+        err.statusCode = 422;
+        throw err;
+     
     }
     
     updates.forEach((update) => (group[update] = req.body[update]));

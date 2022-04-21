@@ -94,17 +94,23 @@ router.post(
     const { name, email, password } = req.body;
     try {
       const errors = validationResult(req);
-
+      let arr=[]
       if (!errors.isEmpty()) {
         const error = new Error("Dữ liệu nhập vào không hợp lệ");
         error.statusCode = 422;
-        error.data = errors.array();
+        error.data = arr = errors.array();
         throw error;
       }
       let checkEmail = await User.find({email});
+      
       if(checkEmail.length>0 ){
-        const err = new Error('Email đã được đăng ký, vui lòng chọn email khác');
-        err.statusCode = 400;
+        const err = new Error('Dữ liệu nhập vào không hợp lệ');
+        let param = {
+          msg: 'Email đã được đăng ký, vui lòng chọn email khác', 
+          param : 'email'
+        }
+        err.data = [...arr, param]
+        err.statusCode = 422;
         throw err;
       }
       const data = {
@@ -153,7 +159,7 @@ router.put("/reset-password", async (req, res, next) => {
   try {
     if (!resetLink) {
       const err = new Error("Không tồn tại token");
-      err.statusCode = 401;
+      err.statusCode = 417;
       throw err;
     }
 
@@ -162,7 +168,7 @@ router.put("/reset-password", async (req, res, next) => {
     const user = await User.findOne({ resetLink });
     if (!user) {
       const err = new Error("Người dùng với token không tồn tại");
-      err.statusCode = 401;
+      err.statusCode = 417;
       throw err;
     }
     user.password = newPass;
@@ -172,7 +178,7 @@ router.put("/reset-password", async (req, res, next) => {
   } catch (error) {
     if (error.name === "TokenExpiredError") {
       const err = new Error("Token hết hạn hoặc không chính xác");
-      err.statusCode = 401;
+      err.statusCode = 417;
       next(err);
     } else next(error);
   }
@@ -185,10 +191,16 @@ router.put("/forgot-password", async (req, res, next) => {
     const { email } = req.body;
     console.log(email, req.body);
     const user = await User.findOne({ email });
+    let arr = []
     if (!user) {
-      const err = new Error("Email không tồn tại");
-      err.statusCode = 400;
-      throw err;
+      const err = new Error('Dữ liệu nhập vào không hợp lệ');
+        let param = {
+          msg: 'Email đã được đăng ký, vui lòng chọn email khác', 
+          param : 'email'
+        }
+        err.data = [...arr, param]
+        err.statusCode = 422;
+        throw err;
     }
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "20m",

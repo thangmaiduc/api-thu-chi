@@ -107,11 +107,17 @@ const createPost = async (req, res, next) => {
       const type =req.body.type;
       delete req.body.type;
       let post;
-      let group = await Group.findById(req.body.group, {type : 1});
+      let group = await Group.findOne({_id :req.body.group,  owner: req.user._id} , {type : 1});
       if(group.type !==type) {
-        const error = new Error('Nhóm không chính xác');
-        error.statusCode = 400;
-        throw error;
+        let arr = []
+      const err = new Error('Dữ liệu nhập vào không hợp lệ');
+        let param = {
+          msg: 'Không tìm thấy nhóm', 
+          param : 'group'
+        }
+        err.data = [...arr, param]
+        err.statusCode = 422;
+        throw err;
       }
       if( type==='chi')
         post = new Expenditure({ ...req.body, owner: req.user._id })
