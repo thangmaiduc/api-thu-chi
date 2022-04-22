@@ -160,11 +160,24 @@ const getPostByMonth = async (req, res, next) => {
         $project: {
           totalMoney: 1,
           group_name: "$group.name",
+          group_color: "$group.color",
         },
       },
       {
         $unwind: "$group_name",
+         
+        
       },
+      
+      {
+        $unwind:  "$group_color",
+        
+      },
+      {
+        $sort:{ 
+          totalMoney: -1
+        }
+      }
     ];
     const expenditures = await Expenditure.aggregate(aggregate).exec();
     const receipts = await Receipts.aggregate(aggregate).exec();
@@ -180,6 +193,12 @@ const getPostByMonth = async (req, res, next) => {
     let tongChi = expenditures.reduce((tongChi, expenditures) => {
       return (tongChi += expenditures.totalMoney);
     }, 0);
+    expenditures.forEach ( exp =>{
+      exp.ratio = (exp.totalMoney / tongChi).toFixed(1)
+    })
+    receipts.forEach ( rec =>{
+      rec.ratio =( rec.totalMoney / tongThu).toFixed(1);
+    })
     const data = { receipts, expenditures, tongThu, tongChi };
     console.log();
     res.status(200).json(data);
