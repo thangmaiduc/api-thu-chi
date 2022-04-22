@@ -5,7 +5,7 @@ var router = express.Router();
 const {validate} =  require('../middlewave/validation')
 /* GET users listing. */
 
-router.get('/thang/:date',getMonth )
+router.get('/thang/',getMonth )
 router.get('/thang/:date/so-do',getPostByMonth )
 router.get('/thang/:date/ngay',getPostAMonthGroupDate )
 router.get('/:id',getPost )

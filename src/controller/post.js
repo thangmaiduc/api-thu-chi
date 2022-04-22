@@ -165,19 +165,16 @@ const getPostByMonth = async (req, res, next) => {
       },
       {
         $unwind: "$group_name",
-         
-        
       },
-      
+
       {
-        $unwind:  "$group_color",
-        
+        $unwind: "$group_color",
       },
       {
-        $sort:{ 
-          totalMoney: -1
-        }
-      }
+        $sort: {
+          totalMoney: -1,
+        },
+      },
     ];
     const expenditures = await Expenditure.aggregate(aggregate).exec();
     const receipts = await Receipts.aggregate(aggregate).exec();
@@ -193,12 +190,12 @@ const getPostByMonth = async (req, res, next) => {
     let tongChi = expenditures.reduce((tongChi, expenditures) => {
       return (tongChi += expenditures.totalMoney);
     }, 0);
-    expenditures.forEach ( exp =>{
-      exp.ratio = (exp.totalMoney / tongChi).toFixed(1)
-    })
-    receipts.forEach ( rec =>{
-      rec.ratio =( rec.totalMoney / tongThu).toFixed(1);
-    })
+    expenditures.forEach((exp) => {
+      exp.ratio = (exp.totalMoney / tongChi).toFixed(3);
+    });
+    receipts.forEach((rec) => {
+      rec.ratio = (rec.totalMoney / tongThu).toFixed(3);
+    });
     const data = { receipts, expenditures, tongThu, tongChi };
     console.log();
     res.status(200).json(data);
@@ -207,7 +204,6 @@ const getPostByMonth = async (req, res, next) => {
   }
 };
 const getMonth = async (req, res, next) => {
-  const mydate = req.params.date;
   /* #swagger.parameters['date'] = { 
       description: 'a date in month then determine which month.' ,
       require: true
@@ -224,28 +220,63 @@ const getMonth = async (req, res, next) => {
                description: 'successful.' 
         } */
   try {
-    const expenditures = await Expenditure.find({
-      owner: req.user._id,
-      date: { $gte: getMonthCur(mydate), $lt: getMonthNext(mydate) },
-    });
-    const receipts = await Receipts.find({
-      owner: req.user._id,
-      date: { $gte: getMonthCur(mydate), $lt: getMonthNext(mydate) },
-    });
-    if (!receipts && !expenditure) {
-      const err = new Error("Không thấy khoảng thu hoặc chi nào ");
-      err.statusCode = 404;
-      throw err;
-    }
-    let tongThu = receipts.reduce((tongThu, receipts) => {
-      return (tongThu += receipts.money);
-    }, 0);
-    let tongChi = expenditures.reduce((tongChi, expenditures) => {
-      return (tongChi += expenditures.money);
-    }, 0);
-    const data = { receipts, expenditures, tongThu, tongChi };
-    console.log();
-    res.status(200).json(data);
+    const aggregate = [
+      [
+        {
+          $project: {
+            month: {
+              $month: "$date",
+            },
+            year: {
+              $year: "$date",
+            },
+          },
+        },
+
+        {
+          $unionWith: {
+            coll: "receipts",
+            pipeline: [
+              {
+                $project: {
+                  month: {
+                    $month: "$date",
+                  },
+                  year: {
+                    $year: "$date",
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $group: {
+            _id: {
+              month: "$month",
+              year: "$year",
+            },
+          },
+        },
+        {
+          $project: {
+            year: "$_id.year",
+            month: "$_id.month",
+            _id: 0,
+          },
+        },
+        {
+          $sort: {
+            year: -1,
+            month: -1,
+          },
+        },
+      ],
+    ];
+    const monthYear = await Expenditure.aggregate(aggregate).exec();
+    // const receipts = await Receipts.aggregate(aggregate).exec();
+    
+    res.status(200).json(monthYear);
   } catch (error) {
     next(error);
   }
