@@ -59,6 +59,8 @@ const getPostAMonthDate = async (req, res, next) => {
         $group: {
           _id: {
             date: { $dayOfMonth: "$date" },
+            month: { $month: "$date" },
+            year: { $year: "$date" },
             postId: "$_id",
             money: "$money",
             note: "$note",
@@ -78,6 +80,7 @@ const getPostAMonthDate = async (req, res, next) => {
         $project: {
           color: "$group.color",
           group_name: "$group.name",
+          type: "$group.type",
         },
       },
       {
@@ -87,8 +90,15 @@ const getPostAMonthDate = async (req, res, next) => {
         $unwind: "$color",
       },
       {
+        $unwind: "$type",
+      },
+      {
         $group: {
-          _id: "$_id.date",
+          _id: {
+            date:  "$_id.date" ,
+            month: "$_id.month" ,
+            year:  '$_id.year' ,
+            },
           post: {
             $push: {
               id: "$_id.postId",
@@ -96,10 +106,12 @@ const getPostAMonthDate = async (req, res, next) => {
               note: "$_id.note",
               group: "$group_name",
               color: "$color",
+              type: "$type",
             },
           },
         },
       },
+      
 
       {
         $sort: {
@@ -115,13 +127,26 @@ const getPostAMonthDate = async (req, res, next) => {
     //   err.statusCode = 404;
     //   throw err;
     // }
-    // let tongThu = receipts.reduce((tongThu, receipts) => {
-    //   return (tongThu += receipts.totalMoney);
-    // }, 0);
-    // let tongChi = expenditures.reduce((tongChi, expenditures) => {
-    //   return (tongChi += expenditures.totalMoney);
-    // }, 0);
+    expenditures.forEach( data =>{
+      data.date = new Date(data._id.year,data._id.month - 1,data._id.date )
+      data.date.setMinutes(data.date.getMinutes()-data.date.getTimezoneOffset())
+      data._id = data._id.date
+      data.tongThu = data.post.reduce((tongThu, post) => {
+        if(post.type==='thu')
+          return (tongThu += post.money);
+          return tongThu
+      }, 0);
+      // console.log(tongThu);
+      data.tongChi = data.post.reduce((tongChi, post) => {
+        if(post.type==='chi')
+          return (tongChi += post.money);
+          return tongChi
+      }, 0);
+      // console.log(tongChi);
+    })
+    
     // const data = { receipts, expenditures, tongThu, tongChi };
+
     console.log();
     res.status(200).json(expenditures);
   } catch (error) {
@@ -293,8 +318,8 @@ const getMonth = async (req, res, next) => {
         },
         {
           $sort: {
-            year: 1,
-            month: 1,
+            year: -1,
+            month: -1,
           },
         },
       ],
@@ -385,10 +410,11 @@ const createPost = async (req, res, next) => {
     req.body.date && (date = new Date(req.body.date));
     // console.log(req.body.date);
     // console.log(date);
+    console.log(req.user._id);
     if (type === "chi")
       post = new Expenditure({ ...req.body, owner: req.user._id, date });
     else if (type === "thu")
-      post = new Receipts({ ...req.body, owner: req.user._id });
+      post = new Receipts({ ...req.body, owner: req.user._id , date });
 
     await post.save();
 
