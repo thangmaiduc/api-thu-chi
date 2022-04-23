@@ -5,13 +5,13 @@ const {
   getYearCur,
   getYearNext,
 } = require("../util/handleDate");
-
 var Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
 var Receipts = require("../model/receipts");
 var { validationResult } = require("express-validator");
-const getPostAMonthGroupDate = async (req, res, next) => {
+const getPostAMonthDate = async (req, res, next) => {
   const mydate = req.params.date;
+
   /* #swagger.parameters['date'] = { 
       description: 'a date in month then determine which month.' ,
       require: true
@@ -33,82 +33,97 @@ const getPostAMonthGroupDate = async (req, res, next) => {
         $match: {
           owner: req.user._id,
           date: {
-            $gte: new Date(getMonthCur(mydate)),
-            $lt: new Date(getMonthNext(mydate)),
+            $gte: getMonthCur(mydate),
+            $lt: getMonthNext(mydate),
           },
         },
       },
       {
+        $unionWith: {
+          coll: "receipts",
+          pipeline: [
+            {
+              $match: {
+                owner: req.user._id,
+                date: {
+                  $gte: getMonthCur(mydate),
+                  $lt: getMonthNext(mydate),
+                },
+              },
+            },
+          ],
+        },
+      },
+
+      {
         $group: {
           _id: {
-            group: "$group",
-            date: "$date",
+            date: { $dayOfMonth: "$date" },
+            postId: "$_id",
+            money: "$money",
+            note: "$note",
+            groupId: "$group",
           },
-
-          totalMoney: { $sum: "$money" },
         },
       },
       {
         $lookup: {
           from: "groups",
-          localField: "_id.group",
+          localField: "_id.groupId",
           foreignField: "_id",
           as: "group",
         },
       },
       {
         $project: {
-          totalMoney: 1,
+          color: "$group.color",
           group_name: "$group.name",
         },
       },
       {
         $unwind: "$group_name",
       },
-
+      {
+        $unwind: "$color",
+      },
       {
         $group: {
           _id: "$_id.date",
-          groups: {
+          post: {
             $push: {
-              group: "$_id.group",
-              name: "$group_name",
-              totalGroup: "$totalMoney",
+              id: "$_id.postId",
+              money: "$_id.money",
+              note: "$_id.note",
+              group: "$group_name",
+              color: "$color",
             },
           },
-          totalMoney: { $sum: "$totalMoney" },
         },
       },
+
       {
         $sort: {
           _id: -1,
         },
       },
-      {
-        $project: {
-          date: "$_id",
-          groups: 1,
-          totalMoney: 1,
-        },
-      },
     ];
     const expenditures = await Expenditure.aggregate(aggregate).exec();
-    const receipts = await Receipts.aggregate(aggregate).exec();
+    // const receipts = await Receipts.aggregate(aggregate).exec();
 
-    if (!receipts && !expenditure) {
-      const err = new Error("Không thấy khoảng thu hoặc chi nào ");
-      err.statusCode = 404;
-      throw err;
-    }
-    let tongThu = receipts.reduce((tongThu, receipts) => {
-      return (tongThu += receipts.totalMoney);
-    }, 0);
-    let tongChi = expenditures.reduce((tongChi, expenditures) => {
-      return (tongChi += expenditures.totalMoney);
-    }, 0);
-    const data = { receipts, expenditures, tongThu, tongChi };
+    // if (!receipts && !expenditure) {
+    //   const err = new Error("Không thấy khoảng thu hoặc chi nào ");
+    //   err.statusCode = 404;
+    //   throw err;
+    // }
+    // let tongThu = receipts.reduce((tongThu, receipts) => {
+    //   return (tongThu += receipts.totalMoney);
+    // }, 0);
+    // let tongChi = expenditures.reduce((tongChi, expenditures) => {
+    //   return (tongChi += expenditures.totalMoney);
+    // }, 0);
+    // const data = { receipts, expenditures, tongThu, tongChi };
     console.log();
-    res.status(200).json(data);
+    res.status(200).json(expenditures);
   } catch (error) {
     next(error);
   }
@@ -136,8 +151,8 @@ const getPostByMonth = async (req, res, next) => {
         $match: {
           owner: req.user._id,
           date: {
-            $gte: new Date(getMonthCur(mydate)),
-            $lt: new Date(getMonthNext(mydate)),
+            $gte: getMonthCur(mydate),
+            $lt: getMonthNext(mydate),
           },
         },
       },
@@ -223,6 +238,11 @@ const getMonth = async (req, res, next) => {
     const aggregate = [
       [
         {
+          $match: {
+            owner: req.user._id,
+          },
+        },
+        {
           $project: {
             month: {
               $month: "$date",
@@ -237,6 +257,11 @@ const getMonth = async (req, res, next) => {
           $unionWith: {
             coll: "receipts",
             pipeline: [
+              {
+                $match: {
+                  owner: req.user._id,
+                },
+              },
               {
                 $project: {
                   month: {
@@ -262,21 +287,30 @@ const getMonth = async (req, res, next) => {
           $project: {
             year: "$_id.year",
             month: "$_id.month",
+
             _id: 0,
           },
         },
         {
           $sort: {
-            year: -1,
-            month: -1,
+            year: 1,
+            month: 1,
           },
         },
       ],
     ];
     const monthYear = await Expenditure.aggregate(aggregate).exec();
     // const receipts = await Receipts.aggregate(aggregate).exec();
-    
-    res.status(200).json(monthYear);
+    monthYear.map((mY) => {
+      mY.month_year = new Date(
+        Date.UTC(mY.year, mY.month - 1, 1)
+      ).toISOString();
+    });
+    let data = monthYear.reduce((outData, objMonthYear) => {
+      return outData.concat(objMonthYear.month_year);
+    }, []);
+
+    res.status(200).json(data);
   } catch (error) {
     next(error);
   }
@@ -348,12 +382,16 @@ const createPost = async (req, res, next) => {
       err.statusCode = 422;
       throw err;
     }
+    req.body.date && (date = new Date(req.body.date));
+    // console.log(req.body.date);
+    // console.log(date);
     if (type === "chi")
-      post = new Expenditure({ ...req.body, owner: req.user._id });
+      post = new Expenditure({ ...req.body, owner: req.user._id, date });
     else if (type === "thu")
       post = new Receipts({ ...req.body, owner: req.user._id });
 
     await post.save();
+
     res.status(201).json(post);
   } catch (error) {
     next(error);
@@ -451,5 +489,5 @@ module.exports = {
   getPost,
   deletePost,
   createPost,
-  getPostAMonthGroupDate,
+  getPostAMonthDate,
 };
