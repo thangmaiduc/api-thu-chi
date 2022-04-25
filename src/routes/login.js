@@ -2,6 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
 const { validate } = require("../middlewave/validation");
+const cloudinary = require("../util/cloudinary");
+const upload = require("../util/multer");
 const router = express.Router();
 var { validationResult } = require("express-validator");
 const sgMail = require("@sendgrid/mail");
@@ -82,34 +84,42 @@ router.post(
                     } ,
                      "password": { 
                         "type": "string", 
-                        "minLength": 7, 
+                        "minLength": 6, 
                         "maxLength": 250, 
                         "example": "1234567" 
+                    } ,
+                     "image": { 
+                        "type": "file", 
+                       "ext": "jpeg | jpg | png",
+                        "example": "1.jpeg" 
                     } 
                 } 
             } 
         } */
+  upload.single("image"),
   validate.validateRegisterUser(),
   async (req, res, next) => {
     const { name, email, password } = req.body;
+
     try {
+      const result = await cloudinary.uploader.upload(req.file.path);
       const errors = validationResult(req);
-      let arr=[]
+      let arr = [];
       if (!errors.isEmpty()) {
         const error = new Error("Dữ liệu nhập vào không hợp lệ");
         error.statusCode = 422;
         error.data = arr = errors.array();
         throw error;
       }
-      let checkEmail = await User.find({email});
-      
-      if(checkEmail.length>0 ){
-        const err = new Error('Dữ liệu nhập vào không hợp lệ');
+      let checkEmail = await User.find({ email });
+
+      if (checkEmail.length > 0) {
+        const err = new Error("Dữ liệu nhập vào không hợp lệ");
         let param = {
-          msg: 'Email đã được đăng ký, vui lòng chọn email khác', 
-          param : 'email'
-        }
-        err.data = [...arr, param]
+          msg: "Email đã được đăng ký, vui lòng chọn email khác",
+          param: "email",
+        };
+        err.data = [...arr, param];
         err.statusCode = 422;
         throw err;
       }
@@ -120,23 +130,28 @@ router.post(
         html: `<h2>Cảm ơn bạn vừa đăng kí tài khoản tại ứng dụng của chúng tôi!</h2>`,
       };
       sgMail
-      .send(data)
-      .then(() => {
-        console.log("Email sent");
-      })
-      .catch((error) => {
-        try {
-          console.log(error);
-        const err = new Error(error.message);
-        err.statusCode = 400;
-        throw err;
-        } catch (error) {
-          next(error)
-        }
-        
+        .send(data)
+        .then(() => {
+          console.log("Email sent");
+        })
+        .catch((error) => {
+          try {
+            console.log(error);
+            const err = new Error(error.message);
+            err.statusCode = 400;
+            throw err;
+          } catch (error) {
+            next(error);
+          }
+        });
+
+      const user = new User({
+        name,
+        email,
+        password,
+        avatar: result.secure_url,
+        cloudinary_id: result.public_id,
       });
-     
-      const user = new User({ name, email, password });
       await user.save();
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: "3 days",
@@ -191,16 +206,16 @@ router.put("/forgot-password", async (req, res, next) => {
     const { email } = req.body;
     console.log(email, req.body);
     const user = await User.findOne({ email });
-    let arr = []
+    let arr = [];
     if (!user) {
-      const err = new Error('Dữ liệu nhập vào không hợp lệ');
-        let param = {
-          msg: 'Email đã được đăng ký, vui lòng chọn email khác', 
-          param : 'email'
-        }
-        err.data = [...arr, param]
-        err.statusCode = 422;
-        throw err;
+      const err = new Error("Dữ liệu nhập vào không hợp lệ");
+      let param = {
+        msg: "Email đã được đăng ký, vui lòng chọn email khác",
+        param: "email",
+      };
+      err.data = [...arr, param];
+      err.statusCode = 422;
+      throw err;
     }
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "20m",
@@ -220,13 +235,12 @@ router.put("/forgot-password", async (req, res, next) => {
       .catch((error) => {
         try {
           console.log(error);
-        const err = new Error(error.message);
-        err.statusCode = 400;
-        throw err;
+          const err = new Error(error.message);
+          err.statusCode = 400;
+          throw err;
         } catch (error) {
-          next(error)
+          next(error);
         }
-        
       });
     await user.updateOne({ resetLink: token });
 

@@ -139,9 +139,14 @@
                 },
                 "password": {
                   "type": "string",
-                  "minLength": 7,
+                  "minLength": 6,
                   "maxLength": 250,
                   "example": "1234567"
+                },
+                "image": {
+                  "type": "file",
+                  "ext": "jpeg | jpg | png",
+                  "example": "1.jpeg"
                 }
               }
             }
@@ -418,7 +423,7 @@
         ]
       }
     },
-    "/api/khoan-thu-chi/thang/{date}": {
+    "/api/khoan-thu-chi/thang/": {
       "get": {
         "tags": [
           "Post"
@@ -427,11 +432,10 @@
         "parameters": [
           {
             "name": "date",
-            "in": "path",
-            "required": true,
-            "type": "string",
             "description": "a date in month then determine which month.",
-            "require": true
+            "require": true,
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -759,7 +763,20 @@
           "User"
         ],
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"

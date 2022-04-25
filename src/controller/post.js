@@ -95,10 +95,10 @@ const getPostAMonthDate = async (req, res, next) => {
       {
         $group: {
           _id: {
-            date:  "$_id.date" ,
-            month: "$_id.month" ,
-            year:  '$_id.year' ,
-            },
+            date: "$_id.date",
+            month: "$_id.month",
+            year: "$_id.year",
+          },
           post: {
             $push: {
               id: "$_id.postId",
@@ -111,7 +111,6 @@ const getPostAMonthDate = async (req, res, next) => {
           },
         },
       },
-      
 
       {
         $sort: {
@@ -127,24 +126,24 @@ const getPostAMonthDate = async (req, res, next) => {
     //   err.statusCode = 404;
     //   throw err;
     // }
-    expenditures.forEach( data =>{
-      data.date = new Date(data._id.year,data._id.month - 1,data._id.date )
-      data.date.setMinutes(data.date.getMinutes()-data.date.getTimezoneOffset())
-      data._id = data._id.date
+    expenditures.forEach((data) => {
+      data.date = new Date(data._id.year, data._id.month - 1, data._id.date);
+      data.date.setMinutes(
+        data.date.getMinutes() - data.date.getTimezoneOffset()
+      );
+      data._id = data._id.date;
       data.tongThu = data.post.reduce((tongThu, post) => {
-        if(post.type==='thu')
-          return (tongThu += post.money);
-          return tongThu
+        if (post.type === "thu") return (tongThu += post.money);
+        return tongThu;
       }, 0);
       // console.log(tongThu);
       data.tongChi = data.post.reduce((tongChi, post) => {
-        if(post.type==='chi')
-          return (tongChi += post.money);
-          return tongChi
+        if (post.type === "chi") return (tongChi += post.money);
+        return tongChi;
       }, 0);
       // console.log(tongChi);
-    })
-    
+    });
+
     // const data = { receipts, expenditures, tongThu, tongChi };
 
     console.log();
@@ -231,9 +230,11 @@ const getPostByMonth = async (req, res, next) => {
       return (tongChi += expenditures.totalMoney);
     }, 0);
     expenditures.forEach((exp) => {
+     if( tongChi === 0) { (exp.ratio = 0); return}
       exp.ratio = (exp.totalMoney / tongChi).toFixed(3);
     });
     receipts.forEach((rec) => {
+      if(tongThu === 0 ){ (exp.ratio = 0); return}
       rec.ratio = (rec.totalMoney / tongThu).toFixed(3);
     });
     const data = { receipts, expenditures, tongThu, tongChi };
@@ -414,7 +415,7 @@ const createPost = async (req, res, next) => {
     if (type === "chi")
       post = new Expenditure({ ...req.body, owner: req.user._id, date });
     else if (type === "thu")
-      post = new Receipts({ ...req.body, owner: req.user._id , date });
+      post = new Receipts({ ...req.body, owner: req.user._id, date });
 
     await post.save();
 
@@ -498,7 +499,7 @@ const deletePost = async (req, res, next) => {
       _id,
       owner: req.user._id,
     });
-    if (!chi && !thu) {
+    if (!expenditure && !thu) {
       const err = new Error("Không thấy khoảng thu hay chi");
       err.statusCode = 404;
       throw err;

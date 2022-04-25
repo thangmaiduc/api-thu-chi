@@ -10,6 +10,16 @@ const userSchema = new mongoose.Schema({
         maxlength: 250,
         required: true
     },
+    avatar: {
+        type: String,
+        trim: true,
+        default:''
+    },
+    cloudinary_id: {
+        type: String,
+        trim: true,
+        default:''
+    },
     email:{
         type: String,
         unique: true,
