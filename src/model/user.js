@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema({
         default:''
         
     },
+    isAuthOTP:{
+        type: Boolean,
+        default: false
+    },
     password:{
         type: String,
         required: true,
@@ -58,7 +62,13 @@ userSchema.methods.toJSON = function(){
 
     return userObject;
 }
+userSchema.methods.isMatch=async function(oldPassword){
+    user =this;
+    console.log(oldPassword, user.password);
+    const isMatch=await bcrypt.compare(oldPassword,user.password)
+        return isMatch;
 
+}
 userSchema.statics.findByCredentials= async (email, password)=>{
     
     user = await User.findOne({email})

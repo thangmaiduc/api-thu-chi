@@ -55,7 +55,15 @@ app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+  try {
+    let err = new Error('Không tìm thấy trang')
+  err.statusCode =404;
+  throw err
+  } catch (error) {
+    next(error);
+  }
+  
+ 
 });
 
 // error handler

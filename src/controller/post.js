@@ -499,7 +499,7 @@ const deletePost = async (req, res, next) => {
       _id,
       owner: req.user._id,
     });
-    if (!expenditure && !thu) {
+    if (!expenditure && !receipts) {
       const err = new Error("Không thấy khoảng thu hay chi");
       err.statusCode = 404;
       throw err;

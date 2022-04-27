@@ -1,9 +1,11 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
+const OTPModel = require("../model/otp");
 const { validate } = require("../middlewave/validation");
-const cloudinary = require("../util/cloudinary");
-const upload = require("../util/multer");
+const otpGenerator = require("otp-generator");
+const bcrypt = require("bcryptjs");
+
 const router = express.Router();
 var { validationResult } = require("express-validator");
 const sgMail = require("@sendgrid/mail");
@@ -51,6 +53,45 @@ router.post(
         throw error;
       }
       const user = await User.findByCredentials(email, password);
+      // if(user.isAuthOTP ===false){
+      //   let err =new Error('Tài khoản email của bạn chưa được xác thực, vui lòng xác thực ')
+      //   err.statusCode= 401;
+      //   const OTP = otpGenerator.generate(6, {
+      //     digits: true,
+         
+      //     lowerCaseAlphabets : false,
+      //     upperCaseAlphabets  : false,
+      //     specialChars : false,
+      //   });
+      //   const data = {
+      //     from: "thang00lata@gmail.com",
+      //     to: req.body.email,
+      //     subject: "Vui lòng xác thực OTP!!",
+      //     html: `<h2>Cảm ơn bạn vừa đăng kí tài khoản tại ứng dụng của chúng tôi!Vui lòng xác thực bằng cách nhập mã : ${OTP}</h2>
+             
+      //     `,
+      //   };
+      //   sgMail
+      //     .send(data)
+      //     .then(() => {
+      //       console.log("Email sent");
+      //     })
+      //     .catch((error) => {
+      //       try {
+      //         console.log(error);
+      //         const err = new Error(error.message);
+      //         err.statusCode = 400;
+      //         throw err;
+      //       } catch (error) {
+      //         next(error);
+      //       }
+      //     });
+      //     const otp = new OTPModel({ email: email, otp: OTP });
+      // const salt = await bcrypt.genSalt(10);
+      // otp.otp = await bcrypt.hash(otp.otp, salt);
+      // const result = await otp.save();
+      //   throw err
+      // }
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: "3 days",
       });
@@ -96,13 +137,12 @@ router.post(
                 } 
             } 
         } */
-  upload.single("image"),
   validate.validateRegisterUser(),
   async (req, res, next) => {
     const { name, email, password } = req.body;
 
     try {
-      const result = await cloudinary.uploader.upload(req.file.path);
+     
       const errors = validationResult(req);
       let arr = [];
       if (!errors.isEmpty()) {
@@ -123,11 +163,20 @@ router.post(
         err.statusCode = 422;
         throw err;
       }
+      const OTP = otpGenerator.generate(6, {
+        digits: true,
+       
+        lowerCaseAlphabets : false,
+        upperCaseAlphabets  : false,
+        specialChars : false,
+      });
       const data = {
         from: "thang00lata@gmail.com",
         to: req.body.email,
-        subject: "Chào mừng bạn!!",
-        html: `<h2>Cảm ơn bạn vừa đăng kí tài khoản tại ứng dụng của chúng tôi!</h2>`,
+        subject: "Vui lòng xác thực OTP!!",
+        html: `<h2>Cảm ơn bạn vừa đăng kí tài khoản tại ứng dụng của chúng tôi!Vui lòng xác thực bằng cách nhập mã : ${OTP}</h2>
+           
+        `,
       };
       sgMail
         .send(data)
@@ -149,22 +198,75 @@ router.post(
         name,
         email,
         password,
-        avatar: result.secure_url,
-        cloudinary_id: result.public_id,
       });
       await user.save();
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "3 days",
-      });
+      const otp = new OTPModel({ email: email, otp: OTP });
+      const salt = await bcrypt.genSalt(10);
+      otp.otp = await bcrypt.hash(otp.otp, salt);
+      const result = await otp.save();
+      // const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      //   expiresIn: "3 days",
+      // });
 
-      res.setHeader("authToken", token);
-      res.status(201).json({ user, token });
+      // res.setHeader("authToken", token);
+      res
+        .status(201)
+        .json({
+          msg: "Mail đã gửi tới email của bạn, vui lòng nhập mã OTP xác thực để đăng kí thành công ",
+          result,
+        });
     } catch (error) {
       next(error);
     }
   }
 );
 
+router.post("/verify-otp", async (req, res, next) => {
+  const { resetLink, newPass } = req.body;
+  // #swagger.description = 'Endpoint reset password.'
+  //#swagger.responses[422] ={description: 'Validation failed.' }
+  //#swagger.responses[401] ={description: 'Unauthorized' }
+  //#swagger.responses[400] ={description: 'Bad Request' }
+  try {
+    const {email, otp} = req.body
+    let otpHolder
+    if(email)
+     otpHolder = await OTPModel.find({email})
+    if (otpHolder.length === 0){
+      let err = new Error("Mã OTP đã hết hạn!")
+      err.statusCode = 400;
+      throw err
+    } 
+    const rightOtpFind = otpHolder[otpHolder.length - 1];
+    const validUser = await bcrypt.compare(otp, rightOtpFind.otp);
+    if (rightOtpFind.email === email && validUser) {
+      const user = User.findOne({email});
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "3 days",
+      });
+      await user.updateOne({
+        $set:{
+          isAuthOTP : true
+        }
+      });
+      const OTPDelete = await OTPModel.deleteMany({
+          email: rightOtpFind.email
+      });
+      return res.status(200).send({
+          message: "User Registration Successfull!",
+          token: token,
+          
+      });
+  } else {
+    let err = new Error("Mã OTP không chính xác")
+    err.statusCode = 400;
+    throw err
+  }
+  } catch (error) {
+    
+     next(error);
+  }
+});
 router.put("/reset-password", async (req, res, next) => {
   const { resetLink, newPass } = req.body;
   // #swagger.description = 'Endpoint reset password.'
