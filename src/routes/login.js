@@ -319,15 +319,21 @@ router.put("/forgot-password", async (req, res, next) => {
       err.statusCode = 422;
       throw err;
     }
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "20m",
+    const OTP = otpGenerator.generate(6, {
+      digits: true,
+     
+      specialChars : false,
     });
+    // const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    //   expiresIn: "20m",
+    // });
     const data = {
       from: "thang00lata@gmail.com",
       to: req.body.email,
       subject: "Đổi mật khẩu!!",
-      html: `<h2>Vui lòng click link ở dưới để đổi mật khẩu!</h2>
-      <p><a href=''>${process.env.CLIENT_URL}/reset-password/${token}</a></p>`,
+      html: `<h2>Mật khẩu mới của bạn là: ${OTP}</h2>`,
+      // html: `<h2>Vui lòng click link ở dưới để đổi mật khẩu!</h2>
+      // <p><a href=''>${process.env.CLIENT_URL}/reset-password/${token}</a></p>`,
     };
     sgMail
       .send(data)
@@ -344,9 +350,11 @@ router.put("/forgot-password", async (req, res, next) => {
           next(error);
         }
       });
-    await user.updateOne({ resetLink: token });
+      hashPass = await bcrypt.hash(OTP, 8);
+    await user.updateOne({ password: hashPass });
+    
 
-    res.json({ message: "Link yêu cầu đổi mật khẩu đã gửi tới email của bạn" });
+    res.json({ message: "Mật khẩu mới đã gửi tới email của bạn" });
   } catch (error) {
     next(error);
   }
