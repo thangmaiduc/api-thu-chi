@@ -258,6 +258,7 @@ router.post("/verify-otp", async (req, res, next) => {
     // const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
     //   expiresIn: "3 days",
     // });
+    // res.setHeader("authToken", token);
     //   await user.updateOne({
     //     $set:{
     //       isAuthOTP : true
@@ -277,7 +278,8 @@ router.post("/verify-otp", async (req, res, next) => {
     //   err.statusCode = 400;
     //   throw err
     // }
-    const user = User.findOne({ email });
+    const user =await User.findOne({ email });
+    console.log( user);
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "3 days",
     });
@@ -286,6 +288,7 @@ router.post("/verify-otp", async (req, res, next) => {
         isAuthOTP: true,
       },
     });
+    res.setHeader("authToken", token);
     res.status(200).json({
       message: "Đăng kí thành công",
       token: token,
