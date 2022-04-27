@@ -27,7 +27,33 @@ router.patch('/me', async (req, res)=>{
 })
 router.patch('/change-password', async (req, res)=>{
  
-    
+    // #swagger.description = 'Endpoint change password  .'
+
+  
+  /* #swagger.parameters['change-password'] = { 
+            in: 'body', 
+            '@schema': { 
+                "required": [ "password", "oldPassword"], 
+                "properties": { 
+                    
+                     "password": { 
+                        "type": "string", 
+                        "maxLength": 250, 
+                        "minLength": 6, 
+                        "example": "123456" 
+                    } ,
+                    "oldPassword": { 
+                        "type": "string", 
+                        "maxLength": 250, 
+                        "minLength": 6, 
+                        "example": "123456" 
+                    } 
+                     
+                } 
+            } 
+        } */
+  //#swagger.responses[401] ={description: 'Unauthorized' }
+  //#swagger.responses[400] ={description: 'Bad Request' }
   const updates = Object.keys(req.body);
   const allowsUpdate =['password', 'oldPassword'] ;
 
@@ -57,7 +83,27 @@ router.patch('/change-password', async (req, res)=>{
 })
 router.post('/upload', upload.single('image'),async (req, res, next)=>{
   try {
-    // Upload image to cloudinary
+     // #swagger.description = 'Endpoint change image avatar  .'
+
+  
+  /* #swagger.parameters['change-image'] = { 
+            in: 'body', 
+            '@schema': { 
+                "required": [ "image"], 
+                "properties": { 
+                    
+                     
+                    "image": { 
+                        "type": "file", 
+                        "extensions":".png|.jpeg.|jpg",
+                        "example": "123456" 
+                    } 
+                     
+                } 
+            } 
+        } */
+  //#swagger.responses[401] ={description: 'Unauthorized' }
+  //#swagger.responses[400] ={description: 'Bad Request' }
    
     if(req.user.cloudinary_id){
       await cloudinary.uploader.destroy(req.user.cloudinary_id);

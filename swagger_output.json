@@ -872,16 +872,28 @@
         "tags": [
           "User"
         ],
-        "description": "",
+        "description": "Endpoint change password .",
         "parameters": [
           {
-            "name": "body",
+            "name": "change-password",
             "in": "body",
             "schema": {
-              "type": "object",
+              "required": [
+                "password",
+                "oldPassword"
+              ],
               "properties": {
+                "password": {
+                  "type": "string",
+                  "maxLength": 250,
+                  "minLength": 6,
+                  "example": "123456"
+                },
                 "oldPassword": {
-                  "example": "any"
+                  "type": "string",
+                  "maxLength": 250,
+                  "minLength": 6,
+                  "example": "123456"
                 }
               }
             }
@@ -893,6 +905,9 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "500": {
             "schema": {
@@ -913,11 +928,34 @@
         "tags": [
           "User"
         ],
-        "description": "",
-        "parameters": [],
+        "description": "Endpoint change image avatar .",
+        "parameters": [
+          {
+            "name": "change-image",
+            "in": "body",
+            "schema": {
+              "required": [
+                "image"
+              ],
+              "properties": {
+                "image": {
+                  "type": "file",
+                  "extensions": ".png|.jpeg.|jpg",
+                  "example": "123456"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "500": {
             "schema": {
