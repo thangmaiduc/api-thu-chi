@@ -54,8 +54,8 @@ router.post(
       }
       const user = await User.findByCredentials(email, password);
       if(user.isAuthOTP ===false){
-        let err =new Error('Tài khoản email của bạn chưa được xác thực, vui lòng xác thực ')
-        err.statusCode= 401;
+        // let err =new Error('Tài khoản email của bạn chưa được xác thực, vui lòng xác thực ')
+        // err.statusCode= 401;
         const OTP = otpGenerator.generate(6, {
           digits: true,
 
@@ -90,13 +90,16 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       otp.otp = await bcrypt.hash(otp.otp, salt);
       const result = await otp.save();
-        throw err
+      return res.status(200).json({msg:'Đã gửi mã OTP đến tài khoản email của bạn', user });
+        // throw err
+      } else{
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+          expiresIn: "3 days",
+        });
+        res.setHeader("authToken", token);
+
+        res.status(200).json({ user, token });
       }
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "3 days",
-      });
-      res.setHeader("authToken", token);
-      res.status(200).json({ user, token });
     } catch (error) {
       if (!error.status) error.status = 500;
       next(error);
