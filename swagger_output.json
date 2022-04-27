@@ -142,11 +142,6 @@
                   "minLength": 6,
                   "maxLength": 250,
                   "example": "1234567"
-                },
-                "image": {
-                  "type": "file",
-                  "ext": "jpeg | jpg | png",
-                  "example": "1.jpeg"
                 }
               }
             }
@@ -164,6 +159,60 @@
           },
           "422": {
             "description": "Validation failed."
+          },
+          "500": {
+            "description": "Error Internal Server"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "Endpoint to verify otp.",
+        "parameters": [
+          {
+            "name": "verifyotp",
+            "in": "body",
+            "schema": {
+              "required": [
+                "otp",
+                "email"
+              ],
+              "properties": {
+                "opt": {
+                  "type": "string",
+                  "Length": 6,
+                  "example": "123456"
+                },
+                "email": {
+                  "type": "string",
+                  "maxLength": 250,
+                  "example": "thang@gmail.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found "
           },
           "500": {
             "description": "Error Internal Server"
@@ -231,16 +280,20 @@
         "tags": [
           "Auth"
         ],
-        "description": "Endpoint forgot password.",
+        "description": "Endpoint forgot password and then receive a random password in email .",
         "parameters": [
           {
-            "name": "body",
+            "name": "reset-password",
             "in": "body",
             "schema": {
-              "type": "object",
+              "required": [
+                "email"
+              ],
               "properties": {
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "maxLength": 250,
+                  "example": "thang@gmail.com"
                 }
               }
             }
@@ -252,6 +305,9 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Not found "
@@ -763,20 +819,7 @@
           "User"
         ],
         "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "image": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "OK"
@@ -809,6 +852,72 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "500": {
+            "schema": {
+              "$ref": "#/definitions/someSchema"
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/change-password": {
+      "patch": {
+        "tags": [
+          "User"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "oldPassword": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "schema": {
+              "$ref": "#/definitions/someSchema"
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/upload": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "500": {
             "schema": {

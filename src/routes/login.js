@@ -128,11 +128,6 @@ router.post(
                         "minLength": 6, 
                         "maxLength": 250, 
                         "example": "1234567" 
-                    } ,
-                     "image": { 
-                        "type": "file", 
-                       "ext": "jpeg | jpg | png",
-                        "example": "1.jpeg" 
                     } 
                 } 
             } 
@@ -223,8 +218,27 @@ router.post(
 
 router.post("/verify-otp", async (req, res, next) => {
   const { resetLink, newPass } = req.body;
-  // #swagger.description = 'Endpoint reset password.'
-  //#swagger.responses[422] ={description: 'Validation failed.' }
+  // #swagger.description = 'Endpoint to verify otp.'
+  
+  /* #swagger.parameters['verifyotp'] = { 
+            in: 'body', 
+            '@schema': { 
+                "required": ["otp", "email"], 
+                "properties": { 
+                    "opt": { 
+                        "type": "string", 
+                        "Length": 6, 
+                        "example": "123456" 
+                    } ,
+                     "email": { 
+                        "type": "string", 
+                        "maxLength": 250, 
+                        "example": "thang@gmail.com" 
+                    } 
+                     
+                } 
+            } 
+        } */
   //#swagger.responses[401] ={description: 'Unauthorized' }
   //#swagger.responses[400] ={description: 'Bad Request' }
   try {
@@ -301,8 +315,25 @@ router.put("/reset-password", async (req, res, next) => {
   }
 });
 router.put("/forgot-password", async (req, res, next) => {
-  // #swagger.description = 'Endpoint forgot password.'
+  // #swagger.description = 'Endpoint forgot password and then receive a random password in email .'
 
+  
+  /* #swagger.parameters['reset-password'] = { 
+            in: 'body', 
+            '@schema': { 
+                "required": [ "email"], 
+                "properties": { 
+                    
+                     "email": { 
+                        "type": "string", 
+                        "maxLength": 250, 
+                        "example": "thang@gmail.com" 
+                    } 
+                     
+                } 
+            } 
+        } */
+  //#swagger.responses[401] ={description: 'Unauthorized' }
   //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     const { email } = req.body;
