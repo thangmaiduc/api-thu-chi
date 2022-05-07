@@ -8,6 +8,7 @@ const {
 var Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
 var Receipts = require("../model/receipts");
+var {buildPdf} = require('../util/pdf-services')
 var { validationResult } = require("express-validator");
 const getPostAMonthDate = async (req, res, next) => {
   const mydate = req.params.date;
@@ -148,6 +149,140 @@ const getPostAMonthDate = async (req, res, next) => {
 
     console.log();
     res.status(200).json(expenditures);
+  } catch (error) {
+    next(error);
+  }
+};
+const exportPdf = async (req, res, next) => {
+  const {dateStart, dateEnd} = req.body;
+
+  /* #swagger.parameters['date'] = { 
+      description: 'a date in month then determine which month.' ,
+      require: true
+    } */
+  // #swagger.description = 'Endpoint to get all receipts,  expenditures and total revenue, cost in a month.'
+
+  /* #swagger.responses[200] = { 
+               schema:{
+                "receipts":[{ $ref: '#/definitions/expenditures'}],
+                 "expenditures":[{ $ref: '#/definitions/receipts'}],
+                 tongThu: 10000000,
+                 tongChi: 3000000
+               },
+               description: 'successful.' 
+        } */
+  try {
+    let aggregate = [
+      {
+        $match: {
+          owner: req.user._id,
+          date: {
+            $gte: getDay(dateStart),
+            $lt: getDay(dateEnd),
+          },
+        },
+      },
+      {
+        $unionWith: {
+          coll: "receipts",
+          pipeline: [
+            {
+              $match: {
+                owner: req.user._id,
+                date: {
+                  $gte: getDay(dateStart),
+                  $lt: getDay(dateEnd),
+                },
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $group: {
+          _id: {
+            date: { $dayOfMonth: "$date" },
+            month: { $month: "$date" },
+            year: { $year: "$date" },
+            postId: "$_id",
+            money: "$money",
+            note: "$note",
+            groupId: "$group",
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "groups",
+          localField: "_id.groupId",
+          foreignField: "_id",
+          as: "group",
+        },
+      },
+      {
+        $project: {
+          color: "$group.color",
+          group_name: "$group.name",
+          type: "$group.type",
+        },
+      },
+      {
+        $unwind: "$group_name",
+      },
+      {
+        $unwind: "$color",
+      },
+      {
+        $unwind: "$type",
+      },
+      {
+        $group: {
+          _id: {
+            date: "$_id.date",
+            month: "$_id.month",
+            year: "$_id.year",
+          },
+          post: {
+            $push: {
+              id: "$_id.postId",
+              money: "$_id.money",
+              note: "$_id.note",
+              group: "$group_name",
+              color: "$color",
+              type: "$type",
+            },
+          },
+        },
+      },
+
+      {
+        $sort: {
+          _id: -1,
+        },
+      },
+    ];
+    const expenditures = await Expenditure.aggregate(aggregate).exec();
+    
+    expenditures.forEach((data) => {
+      data.date = new Date(data._id.year, data._id.month - 1, data._id.date);
+      data.date.setMinutes(
+        data.date.getMinutes() - data.date.getTimezoneOffset()
+      );
+      
+      
+    });
+
+
+    const stream = res.writeHead(200, {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment;filename=invoice.pdf`,
+    });
+    buildPdf(expenditures,
+      (chunk) => stream.write(chunk),
+      () => stream.end()
+    );
+  
   } catch (error) {
     next(error);
   }
@@ -517,4 +652,5 @@ module.exports = {
   deletePost,
   createPost,
   getPostAMonthDate,
+  exportPdf
 };

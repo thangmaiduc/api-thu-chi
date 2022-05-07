@@ -664,6 +664,67 @@
         ]
       }
     },
+    "/api/khoan-thu-chi/ngay/pdf": {
+      "get": {
+        "tags": [
+          "Post"
+        ],
+        "description": "Endpoint to get all receipts, expenditures and total revenue, cost in a month.",
+        "parameters": [
+          {
+            "name": "date",
+            "description": "a date in month then determine which month.",
+            "require": true,
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "receipts": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/expenditures"
+                  }
+                },
+                "expenditures": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/receipts"
+                  }
+                },
+                "tongThu": {
+                  "type": "number",
+                  "example": 10000000
+                },
+                "tongChi": {
+                  "type": "number",
+                  "example": 3000000
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            },
+            "description": "successful."
+          },
+          "404": {
+            "description": "Not found any post"
+          },
+          "500": {
+            "description": "Error Internal Server"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/api/khoan-thu-chi/{id}": {
       "get": {
         "tags": [
