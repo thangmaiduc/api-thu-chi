@@ -154,7 +154,7 @@ const getPostAMonthDate = async (req, res, next) => {
   }
 };
 const exportPdf = async (req, res, next) => {
-  const {dateStart, dateEnd} = req.body;
+  const {dateStart, dateEnd} = req.params;
 
   /* #swagger.parameters['date'] = { 
       description: 'a date in month then determine which month.' ,
