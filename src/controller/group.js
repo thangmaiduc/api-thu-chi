@@ -182,13 +182,28 @@ const deleteGroup = async (req, res, next) => {
         } */
   var _id = req.params.id;
   try {
-    var group = await Group.findOneAndDelete({ _id, owner: req.user._id });
+    let group = await Group.findOne({ _id, owner: req.user._id })
+    .populate("expenditures", {
+      options:{limit: 1}
+    })
+    .populate("receipts",{
+      options:{limit: 1}
+    });
     if (!group) {
       const err = new Error("Không tìm thấy nhóm nào");
       err.statusCode = 404;
       throw err;
     }
-    res.status(200).send(group);
+    if(group.expenditures?.length + group.receipts?.length >0 ) {
+      const err = new Error('Không thể xóa nhóm khi đã có khoản thu chi');
+       
+        err.statusCode = 400;
+        throw err;
+     
+    }
+    var groupDel = await Group.findOneAndDelete({ _id, owner: req.user._id });
+    
+    res.status(200).send(groupDel);
   } catch (error) {
     next(error);
   }
