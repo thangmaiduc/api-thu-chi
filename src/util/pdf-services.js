@@ -1,4 +1,5 @@
 const PDFDocument = require("pdfkit");
+const { Base64Encode } = require("base64-stream");
 
 function buildPdf(invoices, dataCallback, endCallback) {
   const doc = new PDFDocument({
@@ -7,9 +8,9 @@ function buildPdf(invoices, dataCallback, endCallback) {
     margin: 50,
   });
 
-  doc.on("data", dataCallback);
-  doc.on("end", endCallback);
-  generateHeader(doc)
+  // doc.on("data", dataCallback);
+  // doc.on("end", endCallback);
+  generateHeader(doc);
   invoices.map((invoice) => {
     generateCustomerInformation(doc, invoice);
 
@@ -17,15 +18,18 @@ function buildPdf(invoices, dataCallback, endCallback) {
     doc.addPage();
   });
 
-  doc.end();
+  
+  var stream = doc.pipe(new Base64Encode());
+
+  doc.end(); // will trigger the stream to end
+
+  stream.on("data", dataCallback);
+
+  stream.on("end", endCallback);
 }
 
 function generateHeader(doc) {
-  doc
-    
-    .fontSize(20)
-    .text(`CÁC KHOẢNG THU CHI`, 180, 10)
-    
+  doc.fontSize(20).text(`CÁC KHOẢNG THU CHI`, 180, 10);
 }
 
 function generateFooter(doc) {
@@ -40,10 +44,12 @@ function generateFooter(doc) {
 }
 
 function generateCustomerInformation(doc, invoice) {
-  invoice.date.setMinutes(invoice.date.getMinutes()+invoice.date.getTimezoneOffset())
+  invoice.date.setMinutes(
+    invoice.date.getMinutes() + invoice.date.getTimezoneOffset()
+  );
   doc
-  .fontSize(15)
-  .text(`Trong ngày: ${invoice.date.toLocaleDateString("br-FR")}`, 70, 50);
+    .fontSize(15)
+    .text(`Trong ngày: ${invoice.date.toLocaleDateString("br-FR")}`, 70, 50);
 }
 // new Date().
 
@@ -57,13 +63,13 @@ function generateTableRow(doc, x, y, c1, c2, c3, c4) {
   // .text(c5, 30+x, 450+y);
 }
 function generateInvoiceTable(doc, post) {
-  let x =0, y =0;
+  let x = 0,
+    y = 0;
   post.map((post, i) => {
-    
     // console.log(post);
-    if(i >8) {
-      x = 300
-      y = i -9
+    if (i > 8) {
+      x = 300;
+      y = i - 9;
     }
     const position = y * 75;
     y++;
@@ -78,7 +84,7 @@ function generateInvoiceTable(doc, post) {
     );
     generateTableRow(
       doc,
-      x+50,
+      x + 50,
       position,
       post.money,
       post.note,

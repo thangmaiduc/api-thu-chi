@@ -8,7 +8,7 @@ const {
 var Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
 var Receipts = require("../model/receipts");
-var {buildPdf} = require('../util/pdf-services')
+var { buildPdf } = require("../util/pdf-services");
 var { validationResult } = require("express-validator");
 const getPostAMonthDate = async (req, res, next) => {
   const mydate = req.params.date;
@@ -154,7 +154,7 @@ const getPostAMonthDate = async (req, res, next) => {
   }
 };
 const exportPdf = async (req, res, next) => {
-  const {dateStart, dateEnd} = req.params;
+  const { dateStart, dateEnd } = req.params;
 
   /* #swagger.parameters['date'] = { 
       description: 'a date in month then determine which month.' ,
@@ -263,26 +263,34 @@ const exportPdf = async (req, res, next) => {
       },
     ];
     const expenditures = await Expenditure.aggregate(aggregate).exec();
-    
+
     expenditures.forEach((data) => {
       data.date = new Date(data._id.year, data._id.month - 1, data._id.date);
       data.date.setMinutes(
         data.date.getMinutes() - data.date.getTimezoneOffset()
       );
-      
-      
     });
 
-
-    const stream = res.writeHead(200, {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment;filename=invoice.pdf`,
-    });
-    buildPdf(expenditures,
-      (chunk) => stream.write(chunk),
-      () => stream.end()
+    // const stream = res.writeHead(200, {
+    //   'Content-Type': 'application/pdf',
+    //   'Content-Disposition': `attachment;filename=invoice.pdf`,
+    // });
+    var finalString = ""; // contains the base64 string
+    buildPdf(
+      expenditures,
+      (chunk)=> {
+        finalString += chunk;
+      },
+      
+        ()=> {
+          // the stream is at its end, so push the resulting base64 string to the response
+          // console.log(finalString);
+          res.json(finalString);
+        }
     );
-  
+    // let finalString =await buildPdf(expenditures)
+    // console.log(finalString);
+    // res.status(200).json(finalString)
   } catch (error) {
     next(error);
   }
@@ -365,11 +373,17 @@ const getPostByMonth = async (req, res, next) => {
       return (tongChi += expenditures.totalMoney);
     }, 0);
     expenditures.forEach((exp) => {
-     if( tongChi === 0) { (exp.ratio = 0); return}
+      if (tongChi === 0) {
+        exp.ratio = 0;
+        return;
+      }
       exp.ratio = (exp.totalMoney / tongChi).toFixed(3);
     });
     receipts.forEach((rec) => {
-      if(tongThu === 0 ){ (exp.ratio = 0); return}
+      if (tongThu === 0) {
+        exp.ratio = 0;
+        return;
+      }
       rec.ratio = (rec.totalMoney / tongThu).toFixed(3);
     });
     const data = { receipts, expenditures, tongThu, tongChi };
@@ -652,5 +666,5 @@ module.exports = {
   deletePost,
   createPost,
   getPostAMonthDate,
-  exportPdf
+  exportPdf,
 };
