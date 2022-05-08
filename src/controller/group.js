@@ -1,4 +1,6 @@
+const Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
+const Receipts = require("../model/receipts");
 const getGroups = async (req, res, next) => {
   // #swagger.description = 'Endpoint to get all group.'
   //#swagger.responses[404] ={ description : 'not found any group'}
@@ -194,12 +196,11 @@ const deleteGroup = async (req, res, next) => {
       err.statusCode = 404;
       throw err;
     }
-    if(group.expenditures?.length + group.receipts?.length >0 ) {
-      const err = new Error('Không thể xóa nhóm khi đã có khoản thu chi');
-       
-        err.statusCode = 400;
-        throw err;
+    if(group.expenditures?.length >0 ) {
+      await Expenditure.deleteMany({group: _id})
      
+    }else if(group.receipts?.length >0){
+      await Receipts.deleteMany({group: _id})
     }
     var groupDel = await Group.findOneAndDelete({ _id, owner: req.user._id });
     
