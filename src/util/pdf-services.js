@@ -1,31 +1,34 @@
 const PDFDocument = require("pdfkit");
+const fs = require("fs");
 const { Base64Encode } = require("base64-stream");
 
-function buildPdf(invoices, dataCallback, endCallback) {
+function buildPdf(invoices,  endCallback) {
   const doc = new PDFDocument({
     bufferPages: true,
     font: "fonts/Roboto-Regular.ttf",
     margin: 50,
   });
-
   // doc.on("data", dataCallback);
   // doc.on("end", endCallback);
   generateHeader(doc);
   invoices.map((invoice) => {
     generateCustomerInformation(doc, invoice);
-
+    
     generateInvoiceTable(doc, invoice.post);
     doc.addPage();
   });
-
   
-  var stream = doc.pipe(new Base64Encode());
+  let out = fs.createWriteStream('output.pdf')
+  doc.pipe(out);
+  
+  // var stream = doc.pipe(new Base64Encode());
 
   doc.end(); // will trigger the stream to end
 
-  stream.on("data", dataCallback);
+  // stream.on("data", dataCallback);
 
-  stream.on("end", endCallback);
+  // stream.on("end", endCallback);
+  out.on("finish", endCallback);
 }
 
 function generateHeader(doc) {

@@ -5,6 +5,7 @@ const {
   getYearCur,
   getYearNext,
 } = require("../util/handleDate");
+const fs = require("fs");
 var Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
 var Receipts = require("../model/receipts");
@@ -277,16 +278,17 @@ const exportPdf = async (req, res, next) => {
     // });
     var finalString = ""; // contains the base64 string
     buildPdf(
-      expenditures,
-      (chunk)=> {
-        finalString += chunk;
-      },
+      expenditures,function() {
+
+        // read pdf file as base64
+        fs.readFile('output.pdf', 'base64', function(err, data) {
+        if (err) throw err;
+        console.log(data);
       
-        ()=> {
-          // the stream is at its end, so push the resulting base64 string to the response
-          // console.log(finalString);
-          res.json(finalString);
-        }
+        // Send base64 pdf to client
+          res.status(200).json(data);
+      });
+      }
     );
     // let finalString =await buildPdf(expenditures)
     // console.log(finalString);
