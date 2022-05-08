@@ -17,7 +17,7 @@ router.post(
   async function (req, res, next) {
     const { email, password } = req.body;
     try {
-      const errors = validationResult(req);
+     
       // #swagger.description = 'Endpoint to login.'
       //#swagger.responses[422] ={description: 'Validation failed.' }
       //#swagger.responses[401] ={description: 'Unauthorized' }
@@ -45,7 +45,7 @@ router.post(
                
                description: 'successful.' 
         } */
-
+        const errors = validationResult(req);
       if (!errors.isEmpty()) {
         const error = new Error("Dữ liệu nhập vào không hợp lệ");
         error.statusCode = 422;

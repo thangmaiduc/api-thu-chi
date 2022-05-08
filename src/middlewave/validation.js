@@ -17,6 +17,12 @@ let validateLogin = () => {
     check('email', 'Email không chính xác').isEmail()
   ]; 
 }
+let validateChangePassword = () => {
+  return [ 
+    check('password', 'Mật khẩu tối thiểu phải 6 kí tự').isLength({ min: 6 }),
+    check('oldPassword', 'Mật khẩu cũ tối thiểu phải 6 kí tự').isLength({ min: 6 }),
+  ]; 
+}
 let validatePostGroup=() =>{
     return [
         check('name', 'Tên nhóm không chính xác' ).not().isEmpty(),
@@ -38,7 +44,8 @@ let validate = {
     validateRegisterUser,
     validateLogin,
     validatePostGroup,
-    validatePostBoth
+    validatePostBoth,
+    validateChangePassword
   };
   
   module.exports = {validate};

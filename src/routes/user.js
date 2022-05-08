@@ -2,6 +2,8 @@ var express = require('express');
 var User = require('../model/user');
 const cloudinary = require("../util/cloudinary");
 const upload = require("../util/multer");
+var { validationResult } = require("express-validator");
+const { validate } = require("../middlewave/validation");
 
 var router = express.Router();
 
@@ -25,7 +27,7 @@ router.patch('/me', async (req, res)=>{
       res.status(400).send(error)
   }
 })
-router.patch('/change-password', async (req, res)=>{
+router.patch('/change-password', validate.validateChangePassword(), async (req, res, next)=>{
  
     // #swagger.description = 'Endpoint change password  .'
 
@@ -54,6 +56,7 @@ router.patch('/change-password', async (req, res)=>{
         } */
   //#swagger.responses[401] ={description: 'Unauthorized' }
   //#swagger.responses[400] ={description: 'Bad Request' }
+  
   const updates = Object.keys(req.body);
   const allowsUpdate =['password', 'oldPassword'] ;
 
@@ -62,9 +65,18 @@ router.patch('/change-password', async (req, res)=>{
   if(!isValidUpdate && !req.body.oldPassword) res.status(400).send({error: 'Chỉnh sửa không hợp lệ'})
   console.log(req.body);
   try {
-     if(!req.user.isMatch(req.body.oldPassword))
-      {
-        let err = new Error('Mật khẩu không chính xác')
+    const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const error = new Error("Dữ liệu nhập vào không hợp lệ");
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+      }
+   let isMatch =await req.user.isMatch(req.body.oldPassword)
+   console.log(isMatch);
+     if(isMatch ===false)
+      {let arr=[]
+        let err = new Error('Dữ liệu nhập vào không hợp lệ')
         let param = {
           msg: "Mật khẩu cũ không chính xác",
           param: "oldPassword",
@@ -78,7 +90,7 @@ router.patch('/change-password', async (req, res)=>{
       res.json('Đổi mật khẩu thành công');
 
   } catch (error) {
-      res.status(400).send(error)
+      next(error)
   }
 })
 router.post('/upload', upload.single('image'),async (req, res, next)=>{

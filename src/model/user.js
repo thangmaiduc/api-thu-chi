@@ -64,7 +64,6 @@ userSchema.methods.toJSON = function(){
 }
 userSchema.methods.isMatch=async function(oldPassword){
     user =this;
-    console.log(oldPassword, user.password);
     const isMatch=await bcrypt.compare(oldPassword,user.password)
         return isMatch;
 
