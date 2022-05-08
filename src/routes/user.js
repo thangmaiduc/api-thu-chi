@@ -136,8 +136,8 @@ router.post('/upload', upload.single('image'),async (req, res, next)=>{
 router.get('/me', async (req, res)=>{
   
   try {
-    let {_id, email, name} = req.user
-      res.status(200).json({_id, email, name})
+    let {_id, email, name, avatar} = req.user
+      res.status(200).json({_id, email, name, avatar})
   } catch (error) {
       res.status(400).send(error)
   }
