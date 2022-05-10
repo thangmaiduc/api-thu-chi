@@ -358,7 +358,7 @@ router.put("/forgot-password", async (req, res, next) => {
     if (!user) {
       const err = new Error("Dữ liệu nhập vào không hợp lệ");
       let param = {
-        msg: "Email đã được đăng ký, vui lòng chọn email khác",
+        msg: "Email không hợp lệ, vui lòng nhập lại",
         param: "email",
       };
       err.data = [...arr, param];
