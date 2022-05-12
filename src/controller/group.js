@@ -1,6 +1,8 @@
 const Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
 const Receipts = require("../model/receipts");
+
+
 const getGroups = async (req, res, next) => {
   // #swagger.description = 'Endpoint to get all group.'
   //#swagger.responses[404] ={ description : 'not found any group'}
@@ -11,12 +13,8 @@ const getGroups = async (req, res, next) => {
    
 
   try {
-    var groups = await Group.find({ owner: req.user._id }).sort({createdAt : -1});
-    if (!groups) {
-      const err = new Error("Không tìm thấy nhóm nào");
-      err.statusCode = 404;
-      throw err;
-    }
+    var groups = await Group.find({  }).sort({createdAt : -1});
+    
     res.status(200).json(groups);
   } catch (error) {
     next(error);

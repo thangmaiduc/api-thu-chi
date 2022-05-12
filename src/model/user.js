@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         
     },
+    income: {
+        type: Number,
+        default: 0,
+        required: true
+    },
     resetLink:{
         type: String,
         default:''
