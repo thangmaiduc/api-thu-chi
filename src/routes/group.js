@@ -1,9 +1,9 @@
 var express = require('express');
 var router =  express.Router();
-var { createGroup,getGroups,updateGroup,deleteGroup} = require('../controller/group');
+var { createGroup,getGroupsByMonth,updateGroup,deleteGroup} = require('../controller/group');
 
 router
-    .get('/', getGroups )
+    .get('/:mydate', getGroupsByMonth )
     .post('/',createGroup )
     // .get('/:id', getGroup )
     .patch('/:id', updateGroup)

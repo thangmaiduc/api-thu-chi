@@ -1,8 +1,9 @@
 const Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
 const Receipts = require("../model/receipts");
+const { getMonthCur, getMonthNext } = require("../util/handleDate");
 
-const getGroups = async (req, res, next) => {
+const getGroupsByMonth = async (req, res, next) => {
   // #swagger.description = 'Endpoint to get all group.'
   //#swagger.responses[404] ={ description : 'not found any group'}
   /* #swagger.responses[200] = { 
@@ -11,6 +12,7 @@ const getGroups = async (req, res, next) => {
         } */
 
   type = req.query.type || "chi";
+  mydate = req.params.mydate;
   try {
     var groupsObj = await Group.find({ type })
       .sort({ createdAt: 1 })
@@ -18,17 +20,23 @@ const getGroups = async (req, res, next) => {
         path: "expenditures",
         match: {
           owner: req.user._id,
+          date: {
+            $gte: getMonthCur(mydate),
+            $lt: getMonthNext(mydate),
+          },
         },
       });
-     let groups = JSON.parse(JSON.stringify(groupsObj))
+    let groups = JSON.parse(JSON.stringify(groupsObj));
     //  console.log(groups);
-   newGroups=  groups.map(group =>{
-      totalMoney = group.expenditures.reduce((tongChi, post) =>  (tongChi += post.money)
-      , 0)
-      let newGroup=  {...group, totalMoney }
-      return newGroup
-    }) 
-    
+    newGroups = groups.map((group) => {
+      totalMoney = group.expenditures.reduce(
+        (tongChi, post) => (tongChi += post.money),
+        0
+      );
+      let newGroup = { ...group, totalMoney };
+      return newGroup;
+    });
+
     res.status(200).json(newGroups);
   } catch (error) {
     next(error);
@@ -236,7 +244,7 @@ const deleteGroup = async (req, res, next) => {
 module.exports = {
   createGroup,
   // getGroup,
-  getGroups,
+  getGroupsByMonth,
   updateGroup,
   deleteGroup,
 };
