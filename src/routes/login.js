@@ -254,7 +254,7 @@ router.post("/verify-otp", async (req, res, next) => {
     const rightOtpFind = otpHolder[otpHolder.length - 1];
     const validUser = await bcrypt.compare(otp, rightOtpFind.otp);
     if (rightOtpFind.email === email && validUser) {
-    const user = User.findOne({email});
+    const user =await User.findOne({email});
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "3 days",
     });

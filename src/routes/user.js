@@ -13,7 +13,7 @@ router.patch('/me', async (req, res)=>{
  
     
   const updates = Object.keys(req.body);
-  const allowsUpdate =['name'] ;
+  const allowsUpdate =['name', 'income'] ;
 
   const isValidUpdate = updates.every((update)=>allowsUpdate.includes(update))
 
@@ -136,8 +136,8 @@ router.post('/upload', upload.single('image'),async (req, res, next)=>{
 router.get('/me', async (req, res)=>{
   
   try {
-    let {_id, email, name, avatar} = req.user
-      res.status(200).json({_id, email, name, avatar})
+    let {_id, email, name, avatar, income} = req.user
+      res.status(200).json({_id, email, name, avatar,income})
   } catch (error) {
       res.status(400).send(error)
   }
