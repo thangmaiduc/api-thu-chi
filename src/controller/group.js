@@ -14,7 +14,7 @@ const getGroupsByMonth = async (req, res, next) => {
   type = req.query.type || "chi";
   mydate = req.params.mydate;
   try {
-    var groupsObj = await Group.find({ type })
+    var groupsObj = await Group.find({ type , isGeneral: true})
       .sort({ createdAt: 1 })
       .populate({
         path: "expenditures",
@@ -26,14 +26,18 @@ const getGroupsByMonth = async (req, res, next) => {
           },
         },
       });
+      let income = req.user.income
     let groups = JSON.parse(JSON.stringify(groupsObj));
     //  console.log(groups);
     newGroups = groups.map((group) => {
       totalMoney = group.expenditures.reduce(
         (tongChi, post) => (tongChi += post.money),
         0
-      );
-      let newGroup = { ...group, totalMoney };
+        );
+        ratio  = (totalMoney/(income*group.percent)).toFixed(3);
+        // console.log(group.percent);
+      let newGroup = { ...group, totalMoney, ratio };
+      // delete newGroup.expenditures
       return newGroup;
     });
 
@@ -52,6 +56,7 @@ const getGroups= async (req, res, next) => {
 
   // type = req.query.type || "chi";
   try {
+   
     var groupsObj = await Group.find({ 
       $or:[{
         owner: req.user._id,
