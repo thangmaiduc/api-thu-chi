@@ -14,6 +14,10 @@ const Schema = new mongoose.Schema(
       required: true,
       maxlength: 8,
     },
+    percent: {
+      type: Number,
+      default: 0,
+    },
     type: {
       type: String,
       enum: ["thu", "chi"],
