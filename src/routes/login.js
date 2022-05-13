@@ -243,56 +243,56 @@ router.post("/verify-otp", async (req, res, next) => {
   //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     const { email, otp } = req.body;
-    let otpHolder
-    if(email)
-     otpHolder = await OTPModel.find({email})
-    if (otpHolder.length === 0){
-      let err = new Error("Mã OTP đã hết hạn!")
-      err.statusCode = 400;
-      throw err
-    }
-    const rightOtpFind = otpHolder[otpHolder.length - 1];
-    const validUser = await bcrypt.compare(otp, rightOtpFind.otp);
-    if (rightOtpFind.email === email && validUser) {
-    const user =await User.findOne({email});
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "3 days",
-    });
-    res.setHeader("authToken", token);
-      await user.updateOne({
-        $set:{
-          isAuthOTP : true
-        }
-      });
-      const OTPDelete = await OTPModel.deleteMany({
-          email: rightOtpFind.email
-      });
-
-     res.status(200).send({
-        message: "Đăng kí thành công",
-        token: token,
-
-    });
-    } else {
-      let err = new Error("Mã OTP không chính xác")
-      err.statusCode = 400;
-      throw err
-    }
-    // const user =await User.findOne({ email });
-    // console.log( user);
+    // let otpHolder
+    // if(email)
+    //  otpHolder = await OTPModel.find({email})
+    // if (otpHolder.length === 0){
+    //   let err = new Error("Mã OTP đã hết hạn!")
+    //   err.statusCode = 400;
+    //   throw err
+    // }
+    // const rightOtpFind = otpHolder[otpHolder.length - 1];
+    // const validUser = await bcrypt.compare(otp, rightOtpFind.otp);
+    // if (rightOtpFind.email === email && validUser) {
+    // const user =await User.findOne({email});
     // const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
     //   expiresIn: "3 days",
     // });
-    // await user.updateOne({
-    //   $set: {
-    //     isAuthOTP: true,
-    //   },
-    // });
     // res.setHeader("authToken", token);
-    // res.status(200).json({
-    //   message: "Đăng kí thành công",
-    //   token: token,
+    //   await user.updateOne({
+    //     $set:{
+    //       isAuthOTP : true
+    //     }
+    //   });
+    //   const OTPDelete = await OTPModel.deleteMany({
+    //       email: rightOtpFind.email
+    //   });
+
+    //  res.status(200).send({
+    //     message: "Đăng kí thành công",
+    //     token: token,
+
     // });
+    // } else {
+    //   let err = new Error("Mã OTP không chính xác")
+    //   err.statusCode = 400;
+    //   throw err
+    // }
+    const user =await User.findOne({ email });
+    console.log( user);
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "3 days",
+    });
+    await user.updateOne({
+      $set: {
+        isAuthOTP: true,
+      },
+    });
+    res.setHeader("authToken", token);
+    res.status(200).json({
+      message: "Đăng kí thành công",
+      token: token,
+    });
   } catch (error) {
     next(error);
   }

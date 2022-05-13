@@ -545,7 +545,7 @@ const createPost = async (req, res, next) => {
     delete req.body.type;
     let post;
     let group = await Group.findOne(
-      { _id: req.body.group, owner: req.user._id },
+      { _id: req.body.group },
       { type: 1 }
     );
     if (group.type !== type) {
