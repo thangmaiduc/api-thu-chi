@@ -42,6 +42,32 @@ const getGroupsByMonth = async (req, res, next) => {
     next(error);
   }
 };
+const getGroups= async (req, res, next) => {
+  // #swagger.description = 'Endpoint to get all group.'
+  //#swagger.responses[404] ={ description : 'not found any group'}
+  /* #swagger.responses[200] = { 
+               schema: { $ref: "#/definitions/Group" },
+               description: 'successful.' 
+        } */
+
+  // type = req.query.type || "chi";
+  try {
+    var groupsObj = await Group.find({ 
+      $or:[{
+        owner: req.user._id,
+       
+      },{
+        isGeneral:true
+      }]
+     })
+      .sort({ createdAt: 1 })
+      
+
+    res.status(200).json(groupsObj);
+  } catch (error) {
+    next(error);
+  }
+};
 // const getGroup = async (req, res, next) => {
 //   // #swagger.parameters['id'] = { description: 'Group ID .' }
 //   // #swagger.description = 'Endpoint to get all post in a group.'
@@ -244,6 +270,7 @@ const deleteGroup = async (req, res, next) => {
 module.exports = {
   createGroup,
   // getGroup,
+  getGroups,
   getGroupsByMonth,
   updateGroup,
   deleteGroup,
