@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-
+const Income = require('./income')
 const Schema = new mongoose.Schema({
     money: {
         type: Number,
@@ -28,6 +28,15 @@ const Schema = new mongoose.Schema({
         default: Date.now()
     }
 })
+// Schema.post('save', async function(next){
+//     const receipts= this
+//     let incomeMonth =await Income.findOne({$month : {$month : receipts.date}})
+//     totalIncome = Income.totalIncome+receipts.money
+//     incomeMonth.updateOne({totalIncome })
+//     next();
+
+  
+// })
 
 Schema.methods.toJSON = function(){
   
@@ -39,6 +48,7 @@ Schema.methods.toJSON = function(){
   
     return object;
   }
+
 
 const Receipts = mongoose.model('Receipts', Schema)
 

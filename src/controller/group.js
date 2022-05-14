@@ -14,7 +14,7 @@ const getGroupsByMonth = async (req, res, next) => {
   type = req.query.type || "chi";
   mydate = req.params.mydate;
   try {
-    var groupsObj = await Group.find({ type , isGeneral: true})
+    var groupsObj = await Group.find({ type, isGeneral: true })
       .sort({ createdAt: 1 })
       .populate({
         path: "expenditures",
@@ -26,16 +26,37 @@ const getGroupsByMonth = async (req, res, next) => {
           },
         },
       });
-      let income = req.user.income
+      var groupsObj2 = await Group.find({ type:'thu' })
+      .populate({
+        path: "receipts",
+        match: {
+          owner: req.user._id,
+          date: {
+            $gte: getMonthCur(mydate),
+            $lt: getMonthNext(mydate),
+          },
+        },
+      });
+    let income = req.user.income;
     let groups = JSON.parse(JSON.stringify(groupsObj));
     //  console.log(groups);
+    let tongThu=0;
+    groupsObj2.forEach((group) => {
+      totalMoney = group.receipts?.reduce(
+        (tongThu, post) => (tongThu += post.money),
+        0
+      );
+      tongThu+= totalMoney
+    });
+    console.log(tongThu);
     newGroups = groups.map((group) => {
       totalMoney = group.expenditures.reduce(
         (tongChi, post) => (tongChi += post.money),
         0
-        );
-        ratio  = (totalMoney/(income*group.percent)).toFixed(3);
-        // console.log(group.percent);
+      );
+      if(tongThu===0) ratio = 1
+      else ratio = (totalMoney / (tongThu * group.percent)).toFixed(3);
+      // console.log(group.percent);
       let newGroup = { ...group, totalMoney, ratio };
       // delete newGroup.expenditures
       return newGroup;
@@ -46,7 +67,7 @@ const getGroupsByMonth = async (req, res, next) => {
     next(error);
   }
 };
-const getGroups= async (req, res, next) => {
+const getGroups = async (req, res, next) => {
   // #swagger.description = 'Endpoint to get all group.'
   //#swagger.responses[404] ={ description : 'not found any group'}
   /* #swagger.responses[200] = { 
@@ -56,17 +77,16 @@ const getGroups= async (req, res, next) => {
 
   // type = req.query.type || "chi";
   try {
-   
-    var groupsObj = await Group.find({ 
-      $or:[{
-        owner: req.user._id,
-       
-      },{
-        isGeneral:true
-      }]
-     })
-      .sort({ createdAt: 1 })
-      
+    var groupsObj = await Group.find({
+      $or: [
+        {
+          owner: req.user._id,
+        },
+        {
+          isGeneral: true,
+        },
+      ],
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(groupsObj);
   } catch (error) {
