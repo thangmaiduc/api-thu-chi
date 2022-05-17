@@ -17,7 +17,6 @@ router.post(
   async function (req, res, next) {
     const { email, password } = req.body;
     try {
-     
       // #swagger.description = 'Endpoint to login.'
       //#swagger.responses[422] ={description: 'Validation failed.' }
       //#swagger.responses[401] ={description: 'Unauthorized' }
@@ -45,7 +44,7 @@ router.post(
                
                description: 'successful.' 
         } */
-        const errors = validationResult(req);
+      const errors = validationResult(req);
       if (!errors.isEmpty()) {
         const error = new Error("Dữ liệu nhập vào không hợp lệ");
         error.statusCode = 422;
@@ -53,15 +52,15 @@ router.post(
         throw error;
       }
       const user = await User.findByCredentials(email, password);
-      if(user.isAuthOTP ===false){
+      if (user.isAuthOTP === false) {
         // let err =new Error('Tài khoản email của bạn chưa được xác thực, vui lòng xác thực ')
         // err.statusCode= 401;
         const OTP = otpGenerator.generate(6, {
           digits: true,
 
-          lowerCaseAlphabets : false,
-          upperCaseAlphabets  : false,
-          specialChars : false,
+          lowerCaseAlphabets: false,
+          upperCaseAlphabets: false,
+          specialChars: false,
         });
         const data = {
           from: "thang00lata@gmail.com",
@@ -86,13 +85,15 @@ router.post(
               next(error);
             }
           });
-          const otp = new OTPModel({ email: email, otp: OTP });
-      const salt = await bcrypt.genSalt(10);
-      otp.otp = await bcrypt.hash(otp.otp, salt);
-      const result = await otp.save();
-      return res.status(200).json({msg:'Đã gửi mã OTP đến tài khoản email của bạn', user });
+        const otp = new OTPModel({ email: email, otp: OTP });
+        const salt = await bcrypt.genSalt(10);
+        otp.otp = await bcrypt.hash(otp.otp, salt);
+        const result = await otp.save();
+        return res
+          .status(200)
+          .json({ msg: "Đã gửi mã OTP đến tài khoản email của bạn", user });
         // throw err
-      } else{
+      } else {
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
           expiresIn: "3 days",
         });
@@ -243,40 +244,38 @@ router.post("/verify-otp", async (req, res, next) => {
   //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     const { email, otp } = req.body;
-    let otpHolder
-    if(email)
-     otpHolder = await OTPModel.find({email})
-    if (otpHolder.length === 0){
-      let err = new Error("Mã OTP đã hết hạn!")
+    let otpHolder;
+    if (email) otpHolder = await OTPModel.find({ email });
+    if (otpHolder.length === 0) {
+      let err = new Error("Mã OTP đã hết hạn!");
       err.statusCode = 400;
-      throw err
+      throw err;
     }
     const rightOtpFind = otpHolder[otpHolder.length - 1];
     const validUser = await bcrypt.compare(otp, rightOtpFind.otp);
     if (rightOtpFind.email === email && validUser) {
-    const user =await User.findOne({email});
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "3 days",
-    });
-    res.setHeader("authToken", token);
+      const user = await User.findOne({ email });
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "3 days",
+      });
+      res.setHeader("authToken", token);
       await user.updateOne({
-        $set:{
-          isAuthOTP : true
-        }
+        $set: {
+          isAuthOTP: true,
+        },
       });
       const OTPDelete = await OTPModel.deleteMany({
-          email: rightOtpFind.email
+        email: rightOtpFind.email,
       });
 
-     res.status(200).send({
+      res.status(200).send({
         message: "Đăng kí thành công",
         token: token,
-
-    });
+      });
     } else {
-      let err = new Error("Mã OTP không chính xác")
+      let err = new Error("Mã OTP không chính xác");
       err.statusCode = 400;
-      throw err
+      throw err;
     }
     // const user =await User.findOne({ email });
     // console.log( user);

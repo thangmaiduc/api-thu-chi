@@ -10,6 +10,7 @@ var Expenditure = require("../model/expenditure");
 var Group = require("../model/group");
 var Receipts = require("../model/receipts");
 var { buildPdf } = require("../util/pdf-services");
+const pdf2base64 = require('pdf-to-base64');
 var { validationResult } = require("express-validator");
 const getPostAMonthDate = async (req, res, next) => {
   const mydate = req.params.date;
@@ -264,7 +265,7 @@ const exportPdf = async (req, res, next) => {
       },
     ];
     const expenditures = await Expenditure.aggregate(aggregate).exec();
-
+    console.log(expenditures);
     expenditures.forEach((data) => {
       data.date = new Date(data._id.year, data._id.month - 1, data._id.date);
       data.date.setMinutes(
@@ -280,14 +281,19 @@ const exportPdf = async (req, res, next) => {
     buildPdf(
       expenditures,function() {
 
-        // read pdf file as base64
-        fs.readFile('output.pdf', 'base64', function(err, data) {
-        if (err) throw err;
-        console.log(data);
-      
-        // Send base64 pdf to client
-          res.status(200).json(data);
-      });
+        pdf2base64("output.pdf")
+        .then(
+            (response) => {
+              res.status(200).json(response); //cGF0aC90by9maWxlLmpwZw==
+            }
+        )
+        .catch(
+            (error) => {
+                next(error); //Exepection error....
+            }
+        )
+        
+        
       }
     );
     // let finalString =await buildPdf(expenditures)
