@@ -10,6 +10,8 @@ function buildPdf(invoices,  endCallback) {
   });
   // doc.on("data", dataCallback);
   // doc.on("end", endCallback);
+  let out = fs.createWriteStream('output.pdf')
+  doc.pipe(out);
   generateHeader(doc);
   invoices.map((invoice) => {
     generateCustomerInformation(doc, invoice);
@@ -18,8 +20,8 @@ function buildPdf(invoices,  endCallback) {
     doc.addPage();
   });
   
-  let out = fs.createWriteStream('output.pdf')
-  doc.pipe(out);
+  // let out = fs.createWriteStream('output.pdf')
+  // doc.pipe(out);
   
   // var stream = doc.pipe(new Base64Encode());
 
