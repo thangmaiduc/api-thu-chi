@@ -1,7 +1,7 @@
 
 const getDay=(date)=>{
     const dateParts = date.split('-');
-    date= new Date(`${dateParts[0]}-${dateParts[1]}-${parseInt( dateParts[2])+1}`)
+    date= new Date(`${dateParts[0]}-${dateParts[1]}-${parseInt( dateParts[2])}`)
     date.setMinutes(date.getMinutes()-date.getTimezoneOffset())
     return date
   }
