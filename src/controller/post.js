@@ -14,19 +14,11 @@ var { validationResult } = require("express-validator");
 const getPostAMonthDate = async (req, res, next) => {
   const mydate = req.params.date;
 
-  /* #swagger.parameters['date'] = { 
-      description: 'a date in month then determine which month.' ,
-      require: true
-    } */
-  // #swagger.description = 'Endpoint to get all receipts,  expenditures and total revenue, cost in a month.'
+  
+  // #swagger.description = 'Endpoint to get all receipts,  expenditures group by date in a month.'
 
   /* #swagger.responses[200] = { 
-               schema:{
-                "receipts":[{ $ref: '#/definitions/expenditures'}],
-                 "expenditures":[{ $ref: '#/definitions/receipts'}],
-                 tongThu: 10000000,
-                 tongChi: 3000000
-               },
+              
                description: 'successful.' 
         } */
   try {
@@ -157,22 +149,12 @@ const getPostAMonthDate = async (req, res, next) => {
 const exportPdf = async (req, res, next) => {
   const { dateStart, dateEnd } = req.params;
 
-  /* #swagger.parameters['date'] = { 
-      description: 'a date in month then determine which month.' ,
-      require: true
-    } */
-  // #swagger.description = 'Endpoint to get all receipts,  expenditures and total revenue, cost in a month.'
+  
+  // #swagger.description = 'Endpoint to export revenue and expenditure in range from dateStart to dateEnd.'
 
-  /* #swagger.responses[200] = { 
-               schema:{
-                "receipts":[{ $ref: '#/definitions/expenditures'}],
-                 "expenditures":[{ $ref: '#/definitions/receipts'}],
-                 tongThu: 10000000,
-                 tongChi: 3000000
-               },
-               description: 'successful.' 
-        } */
-        
+  
+        console.log(getDay(dateStart));
+        console.log(getDay(dateEnd));
   try {
     let aggregate = [
       {
@@ -304,15 +286,10 @@ const getPostByMonth = async (req, res, next) => {
       description: 'a date in month then determine which month.' ,
       require: true
     } */
-  // #swagger.description = 'Endpoint to get all receipts,  expenditures and total revenue, cost in a month.'
+  // #swagger.description = 'Endpoint to statistics of revenue and expenditure in a month.'
 
   /* #swagger.responses[200] = { 
-               schema:{
-                "receipts":[{ $ref: '#/definitions/expenditures'}],
-                 "expenditures":[{ $ref: '#/definitions/receipts'}],
-                 tongThu: 10000000,
-                 tongChi: 3000000
-               },
+              
                description: 'successful.' 
         } */
   try {
@@ -397,19 +374,11 @@ const getPostByMonth = async (req, res, next) => {
   }
 };
 const getMonth = async (req, res, next) => {
-  /* #swagger.parameters['date'] = { 
-      description: 'a date in month then determine which month.' ,
-      require: true
-    } */
-  // #swagger.description = 'Endpoint to get all receipts,  expenditures and total revenue, cost in a month.'
+ 
+  // #swagger.description = 'Endpoint to get all month which contain any post.'
 
   /* #swagger.responses[200] = { 
-               schema:{
-                "receipts":[{ $ref: '#/definitions/expenditures'}],
-                 "expenditures":[{ $ref: '#/definitions/receipts'}],
-                 tongThu: 10000000,
-                 tongChi: 3000000
-               },
+              
                description: 'successful.' 
         } */
   try {
@@ -494,6 +463,24 @@ const getMonth = async (req, res, next) => {
   }
 };
 
+const getPosts = async (req, res, next) => {
+  // #swagger.description = 'Endpoint to get all receipts or a expenditure of a user'
+
+  /* #swagger.responses[200] = { 
+               schema:{
+                 $ref: '#/definitions/expenditures'
+               },
+               description: 'successful.' 
+        } */
+  try {
+    let receipts = await Receipts.find({owner: req.user._id});
+    let expenditure = await Expenditure.find({owner: req.user._id});
+   
+     res.json({thu:receipts,chi: expenditure });
+  } catch (error) {
+    next(error);
+  }
+};
 const getPost = async (req, res, next) => {
   // #swagger.parameters['id'] = { description: 'Receipts ID or Expenditure ID.' }
   // #swagger.description = 'Endpoint to get a receipts or a expenditure.'
@@ -527,7 +514,7 @@ const createPost = async (req, res, next) => {
                     $ref : '#/definitions/addPost'
                 }
         } */
-  // #swagger.description = 'Endpoint to get all receipts,  expenditures and total revenue, cost in a month.'
+  // #swagger.description = 'Create a post.'
   //#swagger.responses[422] ={description: 'Validation failed.' }
   /* #swagger.responses[201] = { 
                
@@ -662,6 +649,7 @@ const deletePost = async (req, res, next) => {
   }
 };
 module.exports = {
+  getPosts,
   getPostByMonth,
   getMonth,
   updatePost,

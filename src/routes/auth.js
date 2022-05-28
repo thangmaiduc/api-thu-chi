@@ -28,13 +28,13 @@ router.post(
                      "email": { 
                         "type": "string", 
                         "maxLength": 250, 
-                        "example": "thang@gmail.com" 
+                        "example": "thang2@gmail.com" 
                     } ,
                      "password": { 
                         "type": "string", 
                         "minLength": 7, 
                         "maxLength": 250, 
-                        "example": "1234567" 
+                        "example": "123456" 
                     } 
                     
                 } 
@@ -109,7 +109,7 @@ router.post(
 );
 
 router.post(
-  "/create", // #swagger.description = 'Endpoint to sign up.'
+  "/create", // #swagger.description = 'Endpoint to sign up an acount with email. A email with OTP will sent to your email.'
   //#swagger.responses[422] ={description: 'Validation failed.' }
   //#swagger.responses[400] ={description: 'Bad Request' }
   /* #swagger.parameters['newUser'] = { 
@@ -240,7 +240,6 @@ router.post("/verify-otp", async (req, res, next) => {
                 } 
             } 
         } */
-  //#swagger.responses[401] ={description: 'Unauthorized' }
   //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     const { email, otp } = req.body;
@@ -300,7 +299,6 @@ router.put("/reset-password", async (req, res, next) => {
   const { resetLink, newPass } = req.body;
   // #swagger.description = 'Endpoint reset password.'
   //#swagger.responses[422] ={description: 'Validation failed.' }
-  //#swagger.responses[401] ={description: 'Unauthorized' }
   //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     if (!resetLink) {

@@ -37,7 +37,6 @@ const getGroupsByMonth = async (req, res, next) => {
           },
         },
       });
-    let income = req.user.income;
     let groups = JSON.parse(JSON.stringify(groupsObj));
     //  console.log(groups);
     let tongThu=0;
